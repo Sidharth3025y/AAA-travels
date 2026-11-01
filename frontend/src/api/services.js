@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { apiFetch, clearAuthToken, saveAuthToken } from "./client";
 
 export function sendEnquiry(payload) {
   return apiFetch("/api/contact/messages", {
@@ -89,6 +89,9 @@ export function loginAdmin(payload) {
   return apiFetch("/api/auth/login", {
     method: "POST",
     body: JSON.stringify({ ...payload, adminOnly: true }),
+  }).then((data) => {
+    saveAuthToken(data.token);
+    return data;
   });
 }
 
@@ -96,6 +99,9 @@ export function registerAdmin(payload) {
   return apiFetch("/api/auth/admin/register", {
     method: "POST",
     body: JSON.stringify(payload),
+  }).then((data) => {
+    saveAuthToken(data.token);
+    return data;
   });
 }
 
@@ -117,5 +123,5 @@ export function fetchMe() {
 export function logoutAdmin() {
   return apiFetch("/api/auth/logout", {
     method: "POST",
-  });
+  }).finally(clearAuthToken);
 }

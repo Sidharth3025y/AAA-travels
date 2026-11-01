@@ -1,4 +1,18 @@
 const API_BASE = "https://aaa-travels-m9tq.onrender.com";
+const AUTH_TOKEN_KEY = "aaa-travels-admin-token";
+
+export function saveAuthToken(token) {
+  if (token) localStorage.setItem(AUTH_TOKEN_KEY, token);
+}
+
+export function clearAuthToken() {
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+}
+
+export function authHeaders() {
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export function apiUrl(path) {
   if (!path) return API_BASE;
@@ -14,6 +28,7 @@ export async function apiFetch(path, options = {}) {
       ...(options.body instanceof FormData
         ? {}
         : { "Content-Type": "application/json" }),
+      ...authHeaders(),
       ...options.headers,
     },
   });

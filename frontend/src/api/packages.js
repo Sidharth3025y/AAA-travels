@@ -1,4 +1,4 @@
-import { apiFetch, apiUrl, mediaUrl } from "./client";
+import { apiFetch, apiUrl, authHeaders, mediaUrl } from "./client";
 
 export function normalizePackage(pkg) {
   if (!pkg) return null;
@@ -37,10 +37,14 @@ export async function fetchPackage(id) {
   return normalizePackage(pkg);
 }
 
-export function filterPackages(packages, { category, duration, destination, q } = {}) {
+export function filterPackages(
+  packages,
+  { category, duration, destination, q } = {},
+) {
   return packages.filter((p) => {
     if (category && category !== "all" && p.category !== category) return false;
-    if (destination && destination !== "all" && p.destination !== destination) return false;
+    if (destination && destination !== "all" && p.destination !== destination)
+      return false;
     if (duration && duration !== "all") {
       if (duration === "1-3" && (p.days < 1 || p.days > 3)) return false;
       if (duration === "4-7" && (p.days < 4 || p.days > 7)) return false;
@@ -49,7 +53,8 @@ export function filterPackages(packages, { category, duration, destination, q } 
     }
     if (q) {
       const s = q.toLowerCase();
-      const hay = `${p.id} ${p.title} ${p.destination} ${p.summary}`.toLowerCase();
+      const hay =
+        `${p.id} ${p.title} ${p.destination} ${p.summary}`.toLowerCase();
       if (!hay.includes(s)) return false;
     }
     return true;
@@ -61,6 +66,7 @@ export async function savePackage(formData, id) {
   const res = await fetch(apiUrl(path), {
     method: id ? "PUT" : "POST",
     credentials: "include",
+    headers: authHeaders(),
     body: formData,
   });
   const data = await res.json().catch(() => ({}));

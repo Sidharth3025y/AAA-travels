@@ -34,7 +34,7 @@ function signToken(user) {
   return jwt.sign(
     { id: user._id, email: user.email, role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: "7d" },
   );
 }
 
@@ -74,7 +74,9 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ msg: "All fields required" });
     }
     if (String(password).length < 6) {
-      return res.status(400).json({ msg: "Password must be at least 6 characters" });
+      return res
+        .status(400)
+        .json({ msg: "Password must be at least 6 characters" });
     }
 
     const normalizedEmail = String(email).toLowerCase().trim();
@@ -88,13 +90,20 @@ router.post("/signup", async (req, res) => {
       });
     }
     const role = "admin";
-    const user = await createUser({ name, email: normalizedEmail, password, role });
+    const user = await createUser({
+      name,
+      email: normalizedEmail,
+      password,
+      role,
+    });
 
     if (role === "admin") {
-      setAuthCookie(res, signToken(user));
+      const token = signToken(user);
+      setAuthCookie(res, token);
       return res.status(201).json({
         msg: "Admin account created",
         user: publicUser(user),
+        token,
       });
     }
 
@@ -115,7 +124,9 @@ router.post("/admin/register", async (req, res) => {
       return res.status(400).json({ msg: "All fields required" });
     }
     if (String(password).length < 6) {
-      return res.status(400).json({ msg: "Password must be at least 6 characters" });
+      return res
+        .status(400)
+        .json({ msg: "Password must be at least 6 characters" });
     }
 
     const normalizedEmail = String(email).toLowerCase().trim();
@@ -135,10 +146,12 @@ router.post("/admin/register", async (req, res) => {
       password,
       role: "admin",
     });
-    setAuthCookie(res, signToken(user));
+    const token = signToken(user);
+    setAuthCookie(res, token);
     res.status(201).json({
       msg: "Admin account created",
       user: publicUser(user),
+      token,
     });
   } catch (err) {
     console.error("Admin register error:", err);
@@ -146,42 +159,52 @@ router.post("/admin/register", async (req, res) => {
   }
 });
 
-router.post("/admin/users", authMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ msg: "All fields required" });
-    }
-    if (String(password).length < 6) {
-      return res.status(400).json({ msg: "Password must be at least 6 characters" });
-    }
+router.post(
+  "/admin/users",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const { name, email, password } = req.body;
+      if (!name || !email || !password) {
+        return res.status(400).json({ msg: "All fields required" });
+      }
+      if (String(password).length < 6) {
+        return res
+          .status(400)
+          .json({ msg: "Password must be at least 6 characters" });
+      }
 
-    const normalizedEmail = String(email).toLowerCase().trim();
-    const existingUser = await User.findOne({ email: normalizedEmail });
-    if (existingUser) return res.status(400).json({ msg: "User exists" });
+      const normalizedEmail = String(email).toLowerCase().trim();
+      const existingUser = await User.findOne({ email: normalizedEmail });
+      if (existingUser) return res.status(400).json({ msg: "User exists" });
 
-    const user = await createUser({
-      name,
-      email: normalizedEmail,
-      password,
-      role: "admin",
-    });
-    res.status(201).json({
-      msg: "Admin added",
-      user: publicUser(user),
-    });
-  } catch (err) {
-    console.error("Add admin error:", err);
-    res.status(500).json({ msg: "Server error" });
-  }
-});
+      const user = await createUser({
+        name,
+        email: normalizedEmail,
+        password,
+        role: "admin",
+      });
+      res.status(201).json({
+        msg: "Admin added",
+        user: publicUser(user),
+      });
+    } catch (err) {
+      console.error("Add admin error:", err);
+      res.status(500).json({ msg: "Server error" });
+    }
+  },
+);
 
 router.post("/login", async (req, res) => {
   try {
     const { email, password, adminOnly } = req.body;
-    if (!email || !password) return res.status(400).json({ msg: "All fields required" });
+    if (!email || !password)
+      return res.status(400).json({ msg: "All fields required" });
 
-    const user = await User.findOne({ email: String(email).toLowerCase().trim() });
+    const user = await User.findOne({
+      email: String(email).toLowerCase().trim(),
+    });
     if (!user) return res.status(401).json({ msg: "Invalid credentials" });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -197,10 +220,12 @@ router.post("/login", async (req, res) => {
       }
     }
 
-    setAuthCookie(res, signToken(user));
+    const token = signToken(user);
+    setAuthCookie(res, token);
     res.json({
       msg: "Login success",
       user: publicUser(user),
+      token,
     });
   } catch (err) {
     console.error("Login error:", err);
