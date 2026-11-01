@@ -1,7 +1,7 @@
 import express from "express";
 import Package from "../models/Package.js";
 import { authMiddleware, adminMiddleware } from "../middleware/auth.js";
-import { uploadPackageImage } from "../middleware/upload.js";
+import { removeUploadedFile, uploadPackageImage } from "../middleware/upload.js";
 import { parseLines, uniqueSlug } from "../utils/helpers.js";
 
 const router = express.Router();
@@ -104,7 +104,10 @@ router.put(
       if (data.name && data.name !== pkg.name) {
         data.slug = await uniqueSlug(Package, data.name, pkg._id);
       }
-      if (req.file) data.image = `/uploads/${req.file.filename}`;
+      if (req.file) {
+        removeUploadedFile(pkg.image);
+        data.image = `/uploads/${req.file.filename}`;
+      }
       Object.assign(pkg, data);
       await pkg.save();
       res.json(pkg);
@@ -119,6 +122,7 @@ router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const deleted = await Package.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ msg: "Package not found" });
+    removeUploadedFile(deleted.image);
     res.json({ msg: "Package deleted" });
   } catch (err) {
     console.error(err);

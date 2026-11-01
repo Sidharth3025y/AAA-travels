@@ -49,7 +49,7 @@ export function filterPackages(packages, { category, duration, destination, q } 
     }
     if (q) {
       const s = q.toLowerCase();
-      const hay = `${p.id} ${p.title}`.toLowerCase();
+      const hay = `${p.id} ${p.title} ${p.destination} ${p.summary}`.toLowerCase();
       if (!hay.includes(s)) return false;
     }
     return true;

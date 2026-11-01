@@ -26,7 +26,6 @@ export default function Contact() {
     } catch {
       mailtoFallback(form);
       setStatus("mail");
-      setForm({ name: "", email: "", phone: "", message: "" });
     } finally {
       setLoading(false);
     }
@@ -48,6 +47,7 @@ export default function Contact() {
             {loading ? t("contact.sending") : t("contact.send")}
           </button>
           {status === "ok" && <p className="form-ok">{t("contact.success")}</p>}
+          {status === "mail" && <p className="form-err">{t("contact.error")}</p>}
         </form>
         <div className="contact-cards">
           <article>

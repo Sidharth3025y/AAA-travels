@@ -9,6 +9,7 @@ export default function PackagesPage() {
   const { t } = useI18n();
   const [params, setParams] = useSearchParams();
   const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
   const category = params.get("category") || "all";
   const duration = params.get("duration") || "all";
   const destination = params.get("destination") || "all";
@@ -16,7 +17,8 @@ export default function PackagesPage() {
   useEffect(() => {
     fetchPackages()
       .then(setPackages)
-      .catch(() => setPackages([]));
+      .catch(() => setPackages([]))
+      .finally(() => setLoading(false));
   }, []);
 
   const list = useMemo(
@@ -71,7 +73,9 @@ export default function PackagesPage() {
             </select>
           </label>
         </div>
-        {list.length === 0 ? (
+        {loading ? (
+          <p className="empty">{t("detail.loading")}</p>
+        ) : list.length === 0 ? (
           <p className="empty">{t("tours.noResults")}</p>
         ) : (
           <div className="pkg-grid">

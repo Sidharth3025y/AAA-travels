@@ -16,13 +16,22 @@ router.post("/flight", async (req, res) => {
       });
     }
 
+    const passengerCount = Number.parseInt(people, 10);
+    const travelDate = new Date(date);
+    if (!Number.isInteger(passengerCount) || passengerCount < 1) {
+      return res.status(400).json({ msg: "Passengers must be a whole number of at least 1" });
+    }
+    if (Number.isNaN(travelDate.getTime())) {
+      return res.status(400).json({ msg: "Travel date is invalid" });
+    }
+
     const booking = await Booking.create({
       serviceType: "flight",
       serviceTitle: `Flight: ${from} → ${to}`,
       from: String(from).trim(),
       to: String(to).trim(),
-      date,
-      people: Number(people),
+      date: travelDate,
+      people: passengerCount,
       contact: String(contact).trim(),
       guestName: guestName ? String(guestName).trim() : "",
       guestEmail: guestEmail ? String(guestEmail).trim() : "",

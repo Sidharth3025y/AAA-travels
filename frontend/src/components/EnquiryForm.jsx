@@ -7,6 +7,7 @@ export default function EnquiryForm({ packageTitle = "" }) {
   const { t } = useI18n();
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -43,6 +44,7 @@ export default function EnquiryForm({ packageTitle = "" }) {
       });
       setStatus("ok");
       setForm({ name: "", email: "", phone: "", date: "", people: "2", notes: "" });
+      setAgreed(false);
     } catch {
       mailtoFallback({
         name: form.name,
@@ -80,6 +82,8 @@ export default function EnquiryForm({ packageTitle = "" }) {
           type="checkbox"
           name="terms"
           required
+          checked={agreed}
+          onChange={(e) => setAgreed(e.target.checked)}
           style={{
             width: "16px",
             height: "16px",
@@ -124,7 +128,7 @@ export default function EnquiryForm({ packageTitle = "" }) {
         {loading ? t("contact.sending") : t("enquire.submit")}
       </button>
       {status === "ok" && <p className="form-ok">{t("contact.success")}</p>}
-      {status === "mail" && <p className="form-ok">{t("contact.success")}</p>}
+      {status === "mail" && <p className="form-err">{t("contact.error")}</p>}
     </form>
   );
 }

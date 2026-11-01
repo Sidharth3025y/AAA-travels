@@ -12,7 +12,11 @@ const bookingSchema = new mongoose.Schema(
     contact: { type: String, required: true },
     guestName: { type: String, default: "" },
     guestEmail: { type: String, default: "" },
-    status: { type: String, default: "Pending" },
+    status: {
+      type: String,
+      enum: ["Pending", "Success"],
+      default: "Pending",
+    },
   },
   { timestamps: true }
 );

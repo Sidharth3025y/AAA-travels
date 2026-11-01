@@ -8,8 +8,8 @@ import { COUNTRIES } from "../data/options";
 
 const HERO_IMAGES = [
   "https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?auto=format&fit=crop&w=2000&q=80",
-  "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=2000&q=80",
-  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80",
+  "https://images.unsplash.com/photo-1610997686651-98492fd08108?auto=format&fit=crop&w=2000&q=80",
+  "https://images.unsplash.com/photo-1601062196432-0e267ba1e1eb?auto=format&fit=crop&w=2000&q=80",
 ];
 
 const CATS = [
@@ -23,11 +23,14 @@ export default function Home() {
   const { t } = useI18n();
   const [slide, setSlide] = useState(0);
   const [packages, setPackages] = useState([]);
-  const slides = t("hero.slides");
+  const [loading, setLoading] = useState(true);
+  const slides = Array.isArray(t("hero.slides")) ? t("hero.slides") : [];
   const featured = packages.filter((p) => p.featured);
   const shown = featured.length ? featured : packages.slice(0, 6);
+  const current = slides[slide] || slides[0];
 
   useEffect(() => {
+    if (!slides.length) return undefined;
     const id = setInterval(() => setSlide((s) => (s + 1) % slides.length), 7000);
     return () => clearInterval(id);
   }, [slides.length]);
@@ -35,7 +38,8 @@ export default function Home() {
   useEffect(() => {
     fetchPackages()
       .then(setPackages)
-      .catch(() => setPackages([]));
+      .catch(() => setPackages([]))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -50,10 +54,10 @@ export default function Home() {
         ))}
         <div className="hero-content">
           <p className="eyebrow">{t("brand")}</p>
-          <h1>{slides[slide].title}</h1>
-          <p className="hero-sub">{slides[slide].subtitle}</p>
+          <h1>{current?.title}</h1>
+          <p className="hero-sub">{current?.subtitle}</p>
           <Link to="/packages" className="btn btn-primary">
-            {slides[slide].cta}
+            {current?.cta}
           </Link>
         </div>
         <div className="hero-dots">
@@ -146,7 +150,9 @@ export default function Home() {
           <h2>{t("featured.title")}</h2>
           <p>{t("featured.subtitle")}</p>
         </div>
-        {shown.length === 0 ? (
+        {loading ? (
+          <p className="empty">{t("detail.loading")}</p>
+        ) : shown.length === 0 ? (
           <p className="empty">{t("tours.noResults")}</p>
         ) : (
           <div className="pkg-grid">

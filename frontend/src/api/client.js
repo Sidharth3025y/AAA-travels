@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_BASE = "https://aaa-travels-m9tq.onrender.com";
 
 export function apiUrl(path) {
   if (!path) return API_BASE;
@@ -11,7 +11,9 @@ export async function apiFetch(path, options = {}) {
     credentials: "include",
     ...options,
     headers: {
-      ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+      ...(options.body instanceof FormData
+        ? {}
+        : { "Content-Type": "application/json" }),
       ...options.headers,
     },
   });
@@ -25,6 +27,11 @@ export async function apiFetch(path, options = {}) {
 
 export function mediaUrl(src) {
   if (!src) return "";
-  if (src.startsWith("http")) return src;
+  if (
+    src.startsWith("http") ||
+    src.startsWith("blob:") ||
+    src.startsWith("data:")
+  )
+    return src;
   return apiUrl(src);
 }

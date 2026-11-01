@@ -31,7 +31,7 @@ export default function Navbar() {
         >
           <img
             src={Logo}
-            alt=""
+            alt="AAA Travels and Tours"
             className="h-12 w-12 rounded-full border-2 border-[#e6eaf0] object-cover"
           />
           <span className="flex flex-col leading-tight">

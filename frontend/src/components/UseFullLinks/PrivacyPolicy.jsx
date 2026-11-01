@@ -33,7 +33,7 @@ export default function PrivacyPolicy() {
             <section style={{ marginBottom: "30px" }}>
                 <h2>1. Introduction</h2>
                 <p>
-                    AAA Travels Pvt Ltd We respects your privacy and
+                    AAA Travels Pvt Ltd respects your privacy and
                     is committed to protecting the personal information you provide when
                     using our website and travel services.
                 </p>

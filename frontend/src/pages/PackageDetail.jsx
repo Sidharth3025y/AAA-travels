@@ -8,15 +8,26 @@ export default function PackageDetail() {
   const { id } = useParams();
   const { t, localized } = useI18n();
   const [pkg, setPkg] = useState(null);
-  const [loaded, setLoaded] = useState(false);
+  const [loadedId, setLoadedId] = useState(null);
 
   useEffect(() => {
-    setLoaded(false);
+    let cancelled = false;
     fetchPackage(id)
-      .then(setPkg)
-      .catch(() => setPkg(null))
-      .finally(() => setLoaded(true));
+      .then((data) => {
+        if (!cancelled) setPkg(data);
+      })
+      .catch(() => {
+        if (!cancelled) setPkg(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadedId(id);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
+
+  const loaded = loadedId === id;
 
   if (!loaded) {
     return (
@@ -60,8 +71,8 @@ export default function PackageDetail() {
           <p>{localized(pkg.overview)}</p>
           <h2>{t("detail.highlights")}</h2>
           <ul className="check-list">
-            {highlights.map((h) => (
-              <li key={h}>{h}</li>
+            {highlights.map((h, i) => (
+              <li key={`${h}-${i}`}>{h}</li>
             ))}
           </ul>
           <h2>{t("detail.itinerary")}</h2>
@@ -72,8 +83,8 @@ export default function PackageDetail() {
           </ol>
           <h2>{t("detail.includes")}</h2>
           <ul className="check-list">
-            {includes.map((h) => (
-              <li key={h}>{h}</li>
+            {includes.map((h, i) => (
+              <li key={`${h}-${i}`}>{h}</li>
             ))}
           </ul>
         </div>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { getByPath, translations } from "../i18n/translations";
 
 const LanguageContext = createContext(null);
@@ -21,18 +21,18 @@ export function LanguageProvider({ children }) {
     document.documentElement.lang = lang === "ne" ? "ne" : lang === "hi" ? "hi" : "en";
   }, [lang]);
 
-  const t = (path) => {
+  const t = useCallback((path) => {
     const value = getByPath(translations[lang], path);
     if (value == null) return getByPath(translations.en, path) ?? path;
     return value;
-  };
+  }, [lang]);
 
-  const localized = (obj) => {
+  const localized = useCallback((obj) => {
     if (obj == null || typeof obj !== "object" || Array.isArray(obj)) return obj;
     return obj[lang] ?? obj.en;
-  };
+  }, [lang]);
 
-  const value = useMemo(() => ({ lang, setLang, t, localized }), [lang]);
+  const value = useMemo(() => ({ lang, setLang, t, localized }), [lang, t, localized]);
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }

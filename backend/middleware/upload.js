@@ -39,3 +39,11 @@ export function uploadPackageImage(req, res, next) {
   });
 }
 
+export function removeUploadedFile(imagePath) {
+  if (!imagePath || String(imagePath).startsWith("http")) return;
+  const file = path.basename(imagePath);
+  if (!file || file === "." || file === "..") return;
+  const full = path.join(uploadDir, file);
+  fs.promises.unlink(full).catch(() => {});
+}
+

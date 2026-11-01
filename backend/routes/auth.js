@@ -82,7 +82,12 @@ router.post("/signup", async (req, res) => {
     if (existingUser) return res.status(400).json({ msg: "User exists" });
 
     const adminCount = await User.countDocuments({ role: "admin" });
-    const role = adminCount === 0 ? "admin" : "user";
+    if (adminCount > 0) {
+      return res.status(403).json({
+        msg: "Public signup is disabled. Ask an existing admin to add you.",
+      });
+    }
+    const role = "admin";
     const user = await createUser({ name, email: normalizedEmail, password, role });
 
     if (role === "admin") {
@@ -216,7 +221,7 @@ router.get("/me", authMiddleware, async (req, res) => {
 
 router.post("/logout", (_req, res) => {
   clearAuthCookie(res);
-  res.json({ message: "Logged out" });
+  res.json({ msg: "Logged out" });
 });
 
 export default router;

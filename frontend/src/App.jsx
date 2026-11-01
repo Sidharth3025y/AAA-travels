@@ -11,6 +11,8 @@ import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import PrivacyPolicy from "./components/UseFullLinks/PrivacyPolicy";
 import TermsConditions from "./components/UseFullLinks/TermsNCondition";
+import NotFound from "./pages/NotFound";
+import ScrollToTop from "./components/ScrollToTop";
 export default function App() {
   const location = useLocation();
   const isAdminArea =
@@ -18,6 +20,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      <ScrollToTop />
       {!isAdminArea && <Navbar />}
       <main>
         <Routes>
@@ -38,6 +41,7 @@ export default function App() {
             path="/terms-conditions"
             element={<TermsConditions />}
           />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       {!isAdminArea && <Footer />}

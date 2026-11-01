@@ -33,7 +33,7 @@ export default function Footer() {
               <div className="mb-4 flex items-center gap-3">
                 <img
                   src={Logo}
-                  alt=""
+                  alt="AAA Travels and Tours"
                   className="h-12 w-12 rounded-full border-2 border-white/15 object-cover"
                 />
                 <h2 className="m-0 font-serif text-lg font-bold tracking-tight text-white">
@@ -52,12 +52,31 @@ export default function Footer() {
 
             {/* ---------- Useful links ---------- */}
             <div>
-              <h4 className={footerHeadingClass}>Useful Links</h4>
+              <h4 className={footerHeadingClass}>{t("footer.quick")}</h4>
+              <Link to="/" className={footerLinkClass}>
+                {t("nav.home")}
+              </Link>
+              <Link to="/packages" className={footerLinkClass}>
+                {t("nav.tours")}
+              </Link>
+              <Link to="/flights" className={footerLinkClass}>
+                {t("nav.flights")}
+              </Link>
+              <Link to="/about" className={footerLinkClass}>
+                {t("nav.about")}
+              </Link>
+              <Link to="/contact" className={footerLinkClass}>
+                {t("nav.contact")}
+              </Link>
+            </div>
+
+            <div>
+              <h4 className={footerHeadingClass}>{t("footer.legal")}</h4>
               <Link to="/privacy-policy" className={footerLinkClass}>
-                Privacy Policy
+                {t("enquire.privacyLink")}
               </Link>
               <Link to="/terms-conditions" className={footerLinkClass}>
-                Terms &amp; Conditions
+                {t("enquire.termsLink")}
               </Link>
             </div>
 
@@ -102,7 +121,7 @@ export default function Footer() {
         </a>
 
         <a
-          href="https://wa.me/+9779856031570"
+          href="https://wa.me/9779856031570"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="WhatsApp"

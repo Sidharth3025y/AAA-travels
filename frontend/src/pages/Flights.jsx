@@ -3,20 +3,22 @@ import { useI18n } from "../context/LanguageContext";
 import { bookFlight } from "../api/services";
 import { Link } from "react-router-dom";
 
+const emptyForm = {
+  guestName: "",
+  guestEmail: "",
+  contact: "",
+  from: "",
+  to: "",
+  date: "",
+  people: 1,
+};
+
 export default function Flights() {
   const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
-  const [form, setForm] = useState({
-    guestName: "",
-    guestEmail: "",
-    contact: "",
-    from: "",
-    to: "",
-    date: "",
-    people: 1,
-    terms: "agreed",
-  });
+  const [agreed, setAgreed] = useState(false);
+  const [form, setForm] = useState(emptyForm);
   const today = new Date().toISOString().split("T")[0];
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -27,20 +29,8 @@ export default function Flights() {
     try {
       await bookFlight(form);
       setStatus("ok");
-      setForm({
-        guestName: "",
-        guestEmail: "",
-        contact: "",
-        from: "",
-        to: "",
-        date: "",
-        terms: "I agree to the",
-        termsLink: "Terms & Conditions",
-        and: "and",
-        privacyLink: "Privacy Policy",
-
-        people: "1",
-      });
+      setForm(emptyForm);
+      setAgreed(false);
     } catch {
       setStatus("err");
     } finally {
@@ -61,8 +51,7 @@ export default function Flights() {
           <input name="contact" required placeholder={t("enquire.phone")} value={form.contact} onChange={onChange} />
           <input name="from" required placeholder={t("flights.from")} value={form.from} onChange={onChange} />
           <input name="to" required placeholder={t("flights.to")} value={form.to} onChange={onChange} />
-          <input name="date" type="date" required value={form.date} min={today}
-            onChange={onChange} />
+          <input name="date" type="date" required value={form.date} min={today} onChange={onChange} />
           <input name="people" type="number" min="1" required placeholder={t("flights.pax")} value={form.people} onChange={onChange} />
           <label
             style={{
@@ -79,6 +68,8 @@ export default function Flights() {
               type="checkbox"
               name="terms"
               required
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
               style={{
                 width: "16px",
                 height: "16px",
@@ -90,7 +81,6 @@ export default function Flights() {
 
             <span>
               {t("enquire.terms")}{" "}
-
               <Link
                 to="/terms-conditions"
                 style={{
@@ -102,9 +92,7 @@ export default function Flights() {
               >
                 {t("enquire.termsLink")}
               </Link>{" "}
-
               {t("enquire.and")}{" "}
-
               <Link
                 to="/privacy-policy"
                 style={{

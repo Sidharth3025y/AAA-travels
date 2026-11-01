@@ -8,10 +8,13 @@ import {
 } from "../../api/packages";
 import {
   createAdmin,
+  createTestimonial,
   deleteBooking,
   deleteEnquiry,
+  deleteTestimonial,
   fetchBookings,
   fetchEnquiries,
+  fetchTestimonials,
   updateBookingStatus,
 } from "../../api/services";
 import { CATEGORIES, COUNTRIES } from "../../data/options";
@@ -84,6 +87,14 @@ export default function AdminDashboard() {
   const [packages, setPackages] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
+  const [reviewForm, setReviewForm] = useState({
+    name: "",
+    location: "",
+    quote: "",
+    rating: 5,
+    reviewDate: "",
+  });
 
   const [form, setForm] = useState(emptyForm);
   const [staff, setStaff] = useState({ name: "", email: "", password: "" });
@@ -100,14 +111,22 @@ export default function AdminDashboard() {
   const [deleteBookingId, setDeleteBookingId] = useState(null);
 
   const loadAll = async () => {
-    const [pkgs, books, msgs] = await Promise.all([
+    const [pkgs, books, msgs, reviews] = await Promise.allSettled([
       fetchPackages(),
       fetchBookings(),
       fetchEnquiries(),
+      fetchTestimonials(),
     ]);
-    setPackages(pkgs);
-    setBookings(Array.isArray(books) ? books : []);
-    setEnquiries(Array.isArray(msgs) ? msgs : []);
+    if (pkgs.status === "fulfilled") setPackages(pkgs.value);
+    if (books.status === "fulfilled") setBookings(Array.isArray(books.value) ? books.value : []);
+    if (msgs.status === "fulfilled") setEnquiries(Array.isArray(msgs.value) ? msgs.value : []);
+    if (reviews.status === "fulfilled") {
+      setTestimonials(Array.isArray(reviews.value) ? reviews.value : []);
+    }
+    const failed = [pkgs, books, msgs, reviews].find((item) => item.status === "rejected");
+    if (failed) {
+      setError(failed.reason?.message || "Failed to load some admin data");
+    }
   };
 
   useEffect(() => {
@@ -131,7 +150,10 @@ export default function AdminDashboard() {
     if (type === "file") {
       const file = files?.[0] || null;
       setForm((f) => ({ ...f, image: file }));
-      setPreview(file ? URL.createObjectURL(file) : "");
+      setPreview((prev) => {
+        if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+        return file ? URL.createObjectURL(file) : "";
+      });
       return;
     }
     setForm((f) => ({
@@ -186,7 +208,10 @@ export default function AdminDashboard() {
   const resetForm = () => {
     setEditingId(null);
     setForm(emptyForm);
-    setPreview("");
+    setPreview((prev) => {
+      if (prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
+      return "";
+    });
   };
 
   // NEW: close form + reset
@@ -204,8 +229,11 @@ export default function AdminDashboard() {
       const data = new FormData();
       Object.entries(form).forEach(([key, value]) => {
         if (key === "image") {
-          if (value && editingId) return;
           if (value) data.append("image", value);
+          return;
+        }
+        if (key === "featured") {
+          data.append(key, value ? "true" : "false");
           return;
         }
         data.append(key, value);
@@ -224,8 +252,39 @@ export default function AdminDashboard() {
 
   const onDeletePkg = async (id) => {
     if (!window.confirm("Delete this package?")) return;
-    await deletePackage(id);
-    await loadAll();
+    try {
+      await deletePackage(id);
+      await loadAll();
+    } catch (err) {
+      setError(err.message || "Failed to delete package");
+    }
+  };
+
+  const onAddReview = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setMessage("");
+    setError("");
+    try {
+      await createTestimonial(reviewForm);
+      setReviewForm({ name: "", location: "", quote: "", rating: 5, reviewDate: "" });
+      setMessage("Review added");
+      await loadAll();
+    } catch (err) {
+      setError(err.message || "Could not add review");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onDeleteReview = async (id) => {
+    if (!window.confirm("Delete this review?")) return;
+    try {
+      await deleteTestimonial(id);
+      setTestimonials((prev) => prev.filter((item) => item._id !== id));
+    } catch (err) {
+      setError(err.message || "Failed to delete review");
+    }
   };
 
   const onDeleteEnquiry = async (id) => {
@@ -260,12 +319,14 @@ export default function AdminDashboard() {
       hint: "Needs review",
     },
     { label: "Enquiries", value: enquiries.length, hint: "Messages" },
+    { label: "Reviews", value: testimonials.length, hint: "Homepage" },
   ];
 
   const tabs = [
     { id: "packages", label: "Packages" },
     { id: "bookings", label: "Bookings" },
     { id: "enquiries", label: "Enquiries" },
+    { id: "reviews", label: "Reviews" },
     { id: "admins", label: "Admins" },
   ];
 
@@ -303,7 +364,7 @@ export default function AdminDashboard() {
       {/* ---------- Main ---------- */}
       <main className="mx-auto max-w-[1180px] px-5 py-8">
         {/* Stats */}
-        <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-5">
           {stats.map((s) => (
             <div key={s.label} className={`${cardClass} p-5`}>
               <p className="m-0 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-[#5b6777]">
@@ -810,6 +871,86 @@ export default function AdminDashboard() {
                 </table>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ================= REVIEWS ================= */}
+        {tab === "reviews" && (
+          <div className="flex flex-col gap-8">
+            <form onSubmit={onAddReview} className={`${cardClass} flex max-w-3xl flex-col gap-4 p-7`}>
+              <h2 className={sectionTitleClass}>Add Google-style review</h2>
+              <label className={labelBase}>
+                Guest name
+                <input
+                  required
+                  value={reviewForm.name}
+                  onChange={(e) => setReviewForm({ ...reviewForm, name: e.target.value })}
+                  className={inputBase}
+                />
+              </label>
+              <label className={labelBase}>
+                Location
+                <input
+                  value={reviewForm.location}
+                  onChange={(e) => setReviewForm({ ...reviewForm, location: e.target.value })}
+                  className={inputBase}
+                />
+              </label>
+              <label className={labelBase}>
+                Review
+                <textarea
+                  required
+                  rows={4}
+                  value={reviewForm.quote}
+                  onChange={(e) => setReviewForm({ ...reviewForm, quote: e.target.value })}
+                  className={inputBase}
+                />
+              </label>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <label className={labelBase}>
+                  Rating
+                  <input
+                    type="number"
+                    min="1"
+                    max="5"
+                    value={reviewForm.rating}
+                    onChange={(e) => setReviewForm({ ...reviewForm, rating: e.target.value })}
+                    className={inputBase}
+                  />
+                </label>
+                <label className={labelBase}>
+                  Date label
+                  <input
+                    placeholder="March 2026"
+                    value={reviewForm.reviewDate}
+                    onChange={(e) => setReviewForm({ ...reviewForm, reviewDate: e.target.value })}
+                    className={inputBase}
+                  />
+                </label>
+              </div>
+              <button type="submit" disabled={busy} className={`${btnPrimary} self-start`}>
+                {busy ? "Saving…" : "Add review"}
+              </button>
+            </form>
+
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              {testimonials.map((review) => (
+                <article key={review._id} className={`${cardClass} p-5`}>
+                  <h3 className="m-0 font-serif text-base font-bold text-[#0f2744]">{review.name}</h3>
+                  <p className="m-0 mt-1 text-xs text-[#5b6777]">
+                    {review.location} · {review.rating}/5
+                  </p>
+                  <p className="m-0 mt-3 text-sm text-[#1a2332]">{review.quote}</p>
+                  <button
+                    type="button"
+                    onClick={() => onDeleteReview(review._id)}
+                    className={`${btnGhost} mt-4 px-4 py-1.5 text-xs`}
+                  >
+                    Delete
+                  </button>
+                </article>
+              ))}
+            </div>
           </div>
         )}
 

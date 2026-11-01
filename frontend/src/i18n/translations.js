@@ -1,6 +1,6 @@
 export const translations = {
   en: {
-    brand: "AAA Travels and Tours",
+    brand: "AAA Travel and Tours",
     tagline: "Nepal treks, tours, flights & Himalayan adventures",
     nav: {
       home: "Home",
@@ -149,10 +149,15 @@ export const translations = {
     },
     footer: {
       about:
-        "professional travel patner for families, groups and independent travellers.",
+        "Professional travel partner for families, groups and independent travellers.",
       quick: "Quick links",
+      legal: "Legal",
       services: "Services",
       rights: "All rights reserved.",
+    },
+    notFound: {
+      body: "That page could not be found.",
+      home: "Back to home",
     },
     enquire: {
       name: "Name",
@@ -346,18 +351,23 @@ export const translations = {
       success: "धन्यवाद। तपाईंको सोधपुछ प्राप्त भयो।",
       error: "अहिले पठाउन सकिएन। कृपया इमेल वा फोन गर्नुहोस्।",
       address: "ठेगाना",
-      addressValue: "भरतपुर, चितवन, नेपाल",
-      phoneValue: "+९७७-९८००००००००",
-      emailValue: "info@aaatravelsandtours.com",
+      addressValue: "सिर्जनाचोक-८, पोखरा",
+      phoneValue: "+977-9856031570, 061-576662, 061-576663",
+      emailValue: "aaatravel@gmail.com",
       hours: "कार्यालय समय",
-      hoursValue: "आइतबार – शुक्रबार, बिहान ९:०० – साँझ ६:००",
+      hoursValue: "आइतबार – शनिबार, बिहान ८:०० – साँझ ७:००",
     },
     footer: {
       about:
         "AAA ट्राभल्स एण्ड टुर्स — परिवार, समूह र व्यक्तिगत यात्रीका लागि व्यावसायिक हिमाली यात्रा योजना।",
       quick: "छिटो लिङ्क",
+      legal: "कानुनी",
       services: "सेवाहरू",
       rights: "सर्वाधिकार सुरक्षित।",
+    },
+    notFound: {
+      body: "यो पृष्ठ भेटिएन।",
+      home: "गृहपृष्ठमा फर्कनुहोस्",
     },
     enquire: {
       name: "नाम",
@@ -366,6 +376,10 @@ export const translations = {
       date: "रुचाइएको मिति",
       people: "यात्री संख्या",
       notes: "थप विवरण",
+      terms: "म यसमा सहमत छु",
+      termsLink: "नियम तथा शर्तहरू",
+      and: "र",
+      privacyLink: "गोपनीयता नीति",
       submit: "सोधपुछ पठाउनुहोस्",
     },
     flights: {
@@ -534,18 +548,23 @@ export const translations = {
       success: "धन्यवाद। आपकी पूछताछ प्राप्त हो गई है।",
       error: "अभी भेज नहीं सके। कृपया ईमेल या कॉल करें।",
       address: "पता",
-      addressValue: "भरतपुर, चितवन, नेपाल",
-      phoneValue: "+९७७-९८००००००००",
-      emailValue: "info@aaatravelsandtours.com",
+      addressValue: "सिर्जनाचोक-८, पोखरा",
+      phoneValue: "+977-9856031570, 061-576662, 061-576663",
+      emailValue: "aaatravel@gmail.com",
       hours: "कार्यालय समय",
-      hoursValue: "रविवार – शुक्रवार, सुबह ९:०० – शाम ६:००",
+      hoursValue: "रविवार – शनिवार, सुबह ८:०० – शाम ७:००",
     },
     footer: {
       about:
         "AAA ट्रेवल्स एंड टूर्स — परिवार, समूह और स्वतंत्र यात्रियों के लिए पेशेवर हिमालयी यात्रा योजना।",
       quick: "त्वरित लिंक",
+      legal: "कानूनी",
       services: "सेवाएँ",
       rights: "सर्वाधिकार सुरक्षित।",
+    },
+    notFound: {
+      body: "यह पृष्ठ नहीं मिला।",
+      home: "होम पर वापस जाएँ",
     },
     enquire: {
       name: "नाम",
@@ -554,6 +573,10 @@ export const translations = {
       date: "पसंदीदा तिथि",
       people: "यात्री संख्या",
       notes: "नोट्स",
+      terms: "मैं इससे सहमत हूँ",
+      termsLink: "नियम और शर्तें",
+      and: "और",
+      privacyLink: "गोपनीयता नीति",
       submit: "पूछताछ भेजें",
     },
     flights: {
