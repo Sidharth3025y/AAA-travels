@@ -2,13 +2,15 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import Home from "./pages/Home";
+import About from "./pages/About";
 import PackagesPage from "./pages/PackagesPage";
 import PackageDetail from "./pages/PackageDetail";
-import About from "./pages/About";
+import BlogPage from "./pages/BlogPage";
 import Contact from "./pages/Contact";
 import Flights from "./pages/Flights";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import BlogDetail from "./pages/BlogDetail";
 import PrivacyPolicy from "./components/UseFullLinks/PrivacyPolicy";
 import TermsConditions from "./components/UseFullLinks/TermsNCondition";
 import NotFound from "./pages/NotFound";
@@ -28,6 +30,7 @@ export default function App() {
           <Route path="/packages" element={<PackagesPage />} />
           <Route path="/packages/:id" element={<PackageDetail />} />
           <Route path="/about" element={<About />} />
+          <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/flights" element={<Flights />} />
           <Route path="/admin-login-page" element={<AdminLoginPage />} />
@@ -41,6 +44,7 @@ export default function App() {
             path="/terms-conditions"
             element={<TermsConditions />}
           />
+          <Route path="/blog" element={<BlogPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

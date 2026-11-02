@@ -18,6 +18,11 @@ import {
   updateBookingStatus,
 } from "../../api/services";
 import { CATEGORIES, COUNTRIES } from "../../data/options";
+import {
+  deleteBlogPost,
+  fetchAdminBlogPosts,
+  saveBlogPost,
+} from "../../api/blog";
 
 const emptyForm = {
   name: "",
@@ -105,17 +110,33 @@ export default function AdminDashboard() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // NEW: blog state
+  const [blogs, setBlogs] = useState([]);
+  const [blogForm, setBlogForm] = useState({
+    title: "",
+    excerpt: "",
+    content: "",
+    author: "AAA Travels",
+    status: "published",
+  });
+  const [editingBlogId, setEditingBlogId] = useState(null);
+  const [blogMessage, setBlogMessage] = useState("");
+  const [blogError, setBlogError] = useState("");
+  const [blogBusy, setBlogBusy] = useState(false);
+  const [blogImage, setBlogImage] = useState(null);
+
   // NEW: controls whether the package form is visible
   const [showForm, setShowForm] = useState(false);
 
   const [deleteBookingId, setDeleteBookingId] = useState(null);
 
   const loadAll = async () => {
-    const [pkgs, books, msgs, reviews] = await Promise.allSettled([
+    const [pkgs, books, msgs, reviews, blogPosts] = await Promise.allSettled([
       fetchPackages(),
       fetchBookings(),
       fetchEnquiries(),
       fetchTestimonials(),
+      fetchAdminBlogPosts(),
     ]);
     if (pkgs.status === "fulfilled") setPackages(pkgs.value);
     if (books.status === "fulfilled") setBookings(Array.isArray(books.value) ? books.value : []);
@@ -123,6 +144,8 @@ export default function AdminDashboard() {
     if (reviews.status === "fulfilled") {
       setTestimonials(Array.isArray(reviews.value) ? reviews.value : []);
     }
+    if (blogPosts.status === "fulfilled") setBlogs(blogPosts.value);
+    else setBlogError(blogPosts.reason?.message || "Failed to fetch blogs");
     const failed = [pkgs, books, msgs, reviews].find((item) => item.status === "rejected");
     if (failed) {
       setError(failed.reason?.message || "Failed to load some admin data");
@@ -287,6 +310,71 @@ export default function AdminDashboard() {
     }
   };
 
+  // NEW: blog form handlers
+  const onSaveBlog = async (e) => {
+    e.preventDefault();
+    setBlogBusy(true);
+    setBlogMessage("");
+    setBlogError("");
+    try {
+      await saveBlogPost({
+        title: blogForm.title,
+        excerpt: blogForm.excerpt,
+        content: blogForm.content,
+        author: blogForm.author,
+        status: blogForm.status,
+        image: blogImage,
+      }, editingBlogId);
+      setBlogMessage(editingBlogId ? "Blog updated" : "Blog added");
+      resetBlogForm();
+      await loadAll();
+    } catch (err) {
+      setBlogError(err.message || "Save failed");
+    } finally {
+      setBlogBusy(false);
+    }
+  };
+
+  const closeBlogForm = () => {
+    resetBlogForm();
+  };
+
+  const startEditBlog = (blog) => {
+    setEditingBlogId(blog._id);
+    setBlogImage(null);
+    setBlogForm({
+      title: blog.title,
+      excerpt: blog.excerpt || "",
+      content: blog.content,
+      author: blog.author || "AAA Travels",
+      status: blog.status || "published",
+    });
+    setTab("blogs");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const resetBlogForm = () => {
+    setEditingBlogId(null);
+    setBlogImage(null);
+    setBlogForm({
+      title: "",
+      excerpt: "",
+      content: "",
+      author: "AAA Travels",
+      status: "published",
+    });
+  };
+
+  const deleteBlog = async (id) => {
+    if (!window.confirm("Delete this blog post?")) return;
+    try {
+      await deleteBlogPost(id);
+      await loadAll();
+    } catch (err) {
+      setBlogError(err.message || "Failed to delete blog post");
+    }
+  };
+
   const onDeleteEnquiry = async (id) => {
     if (!window.confirm("Delete this message?")) return;
     await deleteEnquiry(id);
@@ -328,6 +416,7 @@ export default function AdminDashboard() {
     { id: "enquiries", label: "Enquiries" },
     { id: "reviews", label: "Reviews" },
     { id: "admins", label: "Admins" },
+    { id: "blogs", label: "Blogs" },
   ];
 
   return (
@@ -950,6 +1039,183 @@ export default function AdminDashboard() {
                   </button>
                 </article>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* ================= BLOGS ================= */}
+        {tab === "blogs" && (
+          <div className="flex flex-col gap-8">
+            {/* Blog form at top */ }
+            <form
+              onSubmit={onSaveBlog}
+              className={`${cardClass} flex max-w-3xl flex-col gap-4 p-7`}
+            >
+              <h2 className={sectionTitleClass}>
+                {editingBlogId ? "Edit blog post" : "Add blog post"}
+              </h2>
+              {blogMessage && (
+                <p
+                  className="mb-2 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
+                >
+                  <span aria-hidden>✓</span> {blogMessage}
+                </p>
+              )}
+              {blogError && (
+                <p
+                  className="mb-2 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-[#b42318]"
+                >
+                  <span aria-hidden>⚠</span> {blogError}
+                </p>
+              )}
+              <label className={labelBase}>
+                Title
+                <input
+                  required
+                  value={blogForm.title}
+                  onChange={(e) =>
+                    setBlogForm({ ...blogForm, title: e.target.value })
+                  }
+                  className={inputBase}
+                />
+              </label>
+
+              <label className={labelBase}>
+                Excerpt (optional)
+                <textarea
+                  value={blogForm.excerpt}
+                  onChange={(e) =>
+                    setBlogForm({ ...blogForm, excerpt: e.target.value })
+                  }
+                  className={inputBase}
+                  rows={3}
+                  placeholder="Short summary for the blog card"
+                />
+              </label>
+
+              <label className={labelBase}>
+                Content (required)
+                <textarea
+                  required
+                  value={blogForm.content}
+                  onChange={(e) =>
+                    setBlogForm({ ...blogForm, content: e.target.value })
+                  }
+                  className={inputBase}
+                  rows={6}
+                  placeholder="Full blog content..."
+                />
+              </label>
+
+              <label className={labelBase}>
+                Cover image {editingBlogId && "(leave empty to keep current)"}
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                  required={!editingBlogId}
+                  onChange={(e) => setBlogImage(e.target.files?.[0] || null)}
+                  className="text-sm text-[#5b6777] file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-[#f6f4ef] file:px-4 file:py-2 file:text-sm file:font-bold file:text-[#0f2744] hover:file:bg-[#e6eaf0]"
+                />
+              </label>
+
+              <label className={labelBase}>
+                Author
+                <input
+                  value={blogForm.author}
+                  onChange={(e) =>
+                    setBlogForm({ ...blogForm, author: e.target.value })
+                  }
+                  className={inputBase}
+                  placeholder="AAA Travels"
+                />
+              </label>
+
+              <label className={labelBase}>
+                Status
+                <select
+                  value={blogForm.status}
+                  onChange={(e) =>
+                    setBlogForm({ ...blogForm, status: e.target.value })
+                  }
+                  className={inputBase}
+                >
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                </select>
+              </label>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={closeBlogForm}
+                  className={btnOutline}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={blogBusy}
+                  className={btnPrimary}
+                >
+                  {blogBusy
+                    ? "Saving…"
+                    : editingBlogId
+                      ? "Update blog"
+                      : "Add blog"}
+                </button>
+              </div>
+            </form>
+
+            {/* Blog posts grid */}
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {blogs.map((blog) => (
+                <article
+                  key={blog._id}
+                  className={`${cardClass} flex flex-col overflow-hidden transition hover:shadow-[0_8px_30px_rgba(15,39,68,0.12)]`}
+                >
+                  <div className="relative h-44 overflow-hidden">
+                    <img
+                      src={blog.image}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                    {blog.status === "published" && (
+                      <span className="absolute left-3 top-3 rounded-full bg-[#c9a227] px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-white shadow-md">
+                        {blog.status}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col gap-2 p-4">
+                    <h3 className="m-0 font-serif text-base font-bold text-[#0f2744]">
+                      {blog.title}
+                    </h3>
+                    <p className="m-0 text-xs text-[#5b6777]">
+                      {blog.excerpt || blog.content?.slice(0, 100)}…
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => startEditBlog(blog)}
+                        className={`${btnPrimary} px-4 py-1.5 text-xs`}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteBlog(blog._id)}
+                        className={`${btnGhost} px-4 py-1.5 text-xs`}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+              {blogs.length === 0 && (
+                <p className="empty text-center py-12 text-[#5b6777]">
+                  No blog posts yet. Add your first post above.
+                </p>
+              )}
             </div>
           </div>
         )}

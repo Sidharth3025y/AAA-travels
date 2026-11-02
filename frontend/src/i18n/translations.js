@@ -11,7 +11,13 @@ export const translations = {
       flights: "Flights",
       about: "About",
       contact: "Contact",
+      blog: "Blog",
       enquire: "Enquire Now",
+    },
+    blog: {
+      title: "Blog",
+      subtitle: "Latest travel stories and guides",
+      noPosts: "No blog posts yet.",
     },
     lang: { en: "English", ne: "Nepali", hi: "Hindi", label: "Language" },
     hero: {
@@ -210,7 +216,13 @@ export const translations = {
       flights: "उडान",
       about: "हाम्रोबारे",
       contact: "सम्पर्क",
+      blog: "ब्लागर",
       enquire: "सोधपुछ गर्नुहोस्",
+    },
+    blog: {
+      title: "ब्लागर",
+      subtitle: "ताजा यात्रा कथा र गाइड",
+      noPosts: "अभी तक कोही ब्लागर पोस्ट छैन",
     },
     lang: { en: "अंग्रेजी", ne: "नेपाली", hi: "हिन्दी", label: "भाषा" },
     hero: {
@@ -407,7 +419,13 @@ export const translations = {
       flights: "फ्लाइट",
       about: "हमारे बारे में",
       contact: "संपर्क",
+      blog: "ब्लॉग",
       enquire: "पूछताछ करें",
+    },
+    blog: {
+      title: "ब्लॉग",
+      subtitle: "अद्यतन यात्रा कहानियाँ और गाइड",
+      noPosts: "अभी तक कोई ब्लॉग पोस्ट नहीं है।",
     },
     lang: { en: "अंग्रेज़ी", ne: "नेपाली", hi: "हिन्दी", label: "भाषा" },
     hero: {

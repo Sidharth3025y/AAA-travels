@@ -18,6 +18,7 @@ export default function Navbar() {
     { to: "/flights", label: t("nav.flights") },
     { to: "/about", label: t("nav.about") },
     { to: "/contact", label: t("nav.contact") },
+    { to: "/blog", label: t("nav.blog") },
   ];
 
   return (

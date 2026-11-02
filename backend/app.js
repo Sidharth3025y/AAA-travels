@@ -10,6 +10,7 @@ import bookingRoutes from "./routes/booking.js";
 import contactRoutes from "./routes/contact.js";
 import packageRoutes from "./routes/packages.js";
 import testimonialRoutes from "./routes/testimonials.js";
+import blogRoutes from "./routes/blog.js";
 
 dotenv.config();
 
@@ -58,6 +59,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/packages", packageRoutes);
 app.use("/api/testimonials", testimonialRoutes);
+app.use("/api/blogs", blogRoutes);
 
 app.use("/api", (_req, res) => {
   res.status(404).json({ msg: "Not found" });
