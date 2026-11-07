@@ -104,12 +104,20 @@ router.put(
       if (data.name && data.name !== pkg.name) {
         data.slug = await uniqueSlug(Package, data.name, pkg._id);
       }
+
+      // Save new image reference to DB first, then delete old file
+      // This ensures we don't lose the image reference if save fails
+      const previousImage = pkg.image;
       if (req.file) {
-        removeUploadedFile(pkg.image);
         data.image = `/uploads/${req.file.filename}`;
       }
       Object.assign(pkg, data);
       await pkg.save();
+
+      // Now delete the old file after successful save
+      if (req.file && previousImage) {
+        removeUploadedFile(previousImage);
+      }
       res.json(pkg);
     } catch (err) {
       console.error(err);
