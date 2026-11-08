@@ -1,4 +1,5 @@
 import multer from "multer";
+import path from "path";
 import { cloudinaryStorage } from "../config/cloudinary.js";
 
 // Multer setup using Cloudinary storage (cloud-based, persists across restarts)
@@ -6,7 +7,7 @@ export const uploadImage = multer({
   storage: cloudinaryStorage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (_req, file, cb) => {
-    const ext = require("path").extname(file.originalname).toLowerCase();
+    const ext = path.extname(file.originalname).toLowerCase();
     const okMime = ["image/jpeg", "image/png", "image/jpg"].includes(file.mimetype);
     const okExt = [".jpg", ".jpeg", ".png"].includes(ext);
     if (okMime && okExt) cb(null, true);
