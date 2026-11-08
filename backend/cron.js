@@ -49,7 +49,3 @@ export const startHealthCron = () => {
   console.log("Health cron job scheduled - will ping every 10 minutes");
 };
 
-// If this file is run directly, start the cron
-if (require.main === module) {
-  startHealthCron();
-}
