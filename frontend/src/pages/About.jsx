@@ -43,7 +43,7 @@ const TEAM = [
     role: "Head of Operations",
     bio: "Coordinates ground logistics, permits, and airline partners. Known for answering 3 AM WhatsApp questions during trekking season.",
     image:
-      "https://scontent.fpkr1-1.fna.fbcdn.net/v/t39.30808-6/867157968_4680151775598496_6396488401971326231_n.jpg?stp=cp6_dst-jpg_tt6&cstp=mx1966x1966&ctp=s1966x1966&_nc_cat=109&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFwk3egDrRRlivH60tVaBCbw5Dzzz9KpObDkPPPP0qk5ngM_PhOoOqNDzOodtRrM-pL2gsD6XeqEkZAvrmFihyJ&_nc_ohc=B8WSYJu0kMMQ7kNvwGNF9ew&_nc_oc=AdpMY7ZoGVd7XLNCVWH9F3pHtI7it5SQW_RB_gXSq9r7Gr9j3sS_SUnhaHJ7cFtjYiqHrtSx0Mdat7rdzaUU-F0r&_nc_zt=23&_nc_ht=scontent.fpkr1-1.fna&_nc_gid=GWDD6HV3yug2S6dC12fckA&_nc_ss=7b2a8&oh=00_AQQQl132LIdEM-61VygUNA6w1dOt_LmmcBbY9G6i-uD3dA&oe=6AF626C3?auto=format&fit=crop&w=600&q=80",
+      "https://www.image2url.com/r2/default/images/1794141613298-7e70ffc9-c9dd-4dff-83e1-d86ec61d73ea.jpg?auto=format&fit=crop&w=600&q=80",
     email: "aaatravel@gmail.com",
     phone: "",
     linkedin: "",
