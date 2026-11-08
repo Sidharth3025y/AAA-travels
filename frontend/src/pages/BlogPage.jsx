@@ -241,7 +241,14 @@ function BlogCard({ post, index }) {
           </span>
         </Link>
 
-        <div style={{ padding: "20px 22px 22px", display: "flex", flexDirection: "column", flex: 1 }}>
+        <div
+          style={{
+            padding: "20px 22px 22px",
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+          }}
+        >
           {/* Meta row */}
           <div
             style={{
@@ -396,7 +403,14 @@ export default function BlogPage() {
           }}
         />
 
-        <div style={{ position: "relative", maxWidth: "820px", margin: "0 auto", textAlign: "center" }}>
+        <div
+          style={{
+            position: "relative",
+            maxWidth: "820px",
+            margin: "0 auto",
+            textAlign: "center",
+          }}
+        >
           <p
             style={{
               margin: "0 0 14px",
@@ -469,7 +483,9 @@ export default function BlogPage() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(min(280px, 100%), 360px))",
+                justifyContent: "center",
                 gap: "22px",
               }}
             >
@@ -527,7 +543,9 @@ export default function BlogPage() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(min(280px, 100%), 360px))",
+                justifyContent: "center",
                 gap: "22px",
               }}
             >

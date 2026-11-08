@@ -61,13 +61,14 @@ function useInView() {
     return [ref, seen];
 }
 
-/* ===== Partner data ===== */
+
 const PARTNERS = [
     {
         key: "iata",
         name: "IATA",
         full: "International Air Transport Association",
         href: "https://www.iata.org/",
+        logo: "https://www.iata.org/contentassets/3e83770142a040d688e269bb2f709b7b/iata-logo-header.svg?height=127&rmode=crop&v=20260518075759",
         accent: "#0b3d6e",
         glyph: "IA",
         note: "Accredited agency",
@@ -77,6 +78,7 @@ const PARTNERS = [
         name: "NTB",
         full: "Nepal Tourism Board",
         href: "https://ntb.gov.np/",
+        logo: "https://d2s3cbzybmajg3.cloudfront.net/public/media/1920/ntb_logo-1663927863_resized1920.jpg",
         accent: "#a01b1b",
         glyph: "NT",
         note: "Government of Nepal",
@@ -86,6 +88,7 @@ const PARTNERS = [
         name: "NAATA",
         full: "Nepal Association of Tour & Travel Agents — Gandaki",
         href: "https://nattagandaki.org.np/member/aaa-travels-pvt-ltd/",
+        logo: "https://natta.org.np/media/branding/6cb51195-f247-4fd6-8103-d1c57fdc3bf9-natta-without-the-slogan-logo.png",
         accent: "#0f6b4f",
         glyph: "NA",
         note: "Member · Gandaki",
@@ -96,6 +99,11 @@ export default function AssociatePartners() {
     usePartnersKeyframes();
     const [ref, seen] = useInView();
     const [hover, setHover] = useState(null);
+    const [brokenLogos, setBrokenLogos] = useState({});
+
+    const handleLogoError = (key) => {
+        setBrokenLogos((prev) => ({ ...prev, [key]: true }));
+    };
 
     return (
         <section
@@ -166,7 +174,6 @@ export default function AssociatePartners() {
                         Our Associate Partners
                     </h2>
 
-                    {/* Gold rule */}
                     <div
                         aria-hidden="true"
                         style={{
@@ -202,12 +209,15 @@ export default function AssociatePartners() {
                     role="list"
                     style={{
                         display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 360px))",
+                        justifyContent: "center",
                         gap: "20px",
                     }}
                 >
                     {PARTNERS.map((p, i) => {
                         const isHover = hover === p.key;
+                        const showImage = p.logo && !brokenLogos[p.key];
+
                         return (
                             <a
                                 key={p.key}
@@ -244,7 +254,7 @@ export default function AssociatePartners() {
                                     overflow: "hidden",
                                 }}
                             >
-                                {/* Top logo row */}
+                                {/* Logo row — image if URL is provided, else monogram tile */}
                                 <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                                     <div
                                         aria-hidden="true"
@@ -255,18 +265,38 @@ export default function AssociatePartners() {
                                             borderRadius: "14px",
                                             display: "grid",
                                             placeItems: "center",
-                                            background: p.accent,
+                                            background: showImage ? "#fff" : p.accent,
+                                            border: showImage ? `1px solid ${C.border}` : "none",
                                             color: "#fff",
                                             fontFamily: "Georgia, 'Times New Roman', serif",
                                             fontWeight: 800,
                                             fontSize: "19px",
                                             letterSpacing: "-0.02em",
-                                            boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.14), 0 8px 18px -10px ${p.accent}`,
+                                            boxShadow: showImage
+                                                ? "inset 0 0 0 1px rgba(0,0,0,0.04)"
+                                                : `inset 0 0 0 1px rgba(255,255,255,0.14), 0 8px 18px -10px ${p.accent}`,
                                             transform: isHover ? "scale(1.06) rotate(-3deg)" : "scale(1) rotate(0)",
                                             transition: "transform 340ms cubic-bezier(0.22, 1, 0.36, 1)",
+                                            overflow: "hidden",
                                         }}
                                     >
-                                        {p.glyph}
+                                        {showImage ? (
+                                            <img
+                                                src={p.logo}
+                                                alt={`${p.name} logo`}
+                                                loading="lazy"
+                                                onError={() => handleLogoError(p.key)}
+                                                style={{
+                                                    width: "100%",
+                                                    height: "100%",
+                                                    objectFit: "contain",
+                                                    padding: "8px",
+                                                    boxSizing: "border-box",
+                                                }}
+                                            />
+                                        ) : (
+                                            p.glyph
+                                        )}
                                     </div>
                                     <div style={{ minWidth: 0 }}>
                                         <p

@@ -26,10 +26,7 @@ const C = {
   dark: "#0b1b30",
 };
 
-/* ============ Team data ============
-   Replace `image` URLs with real photos when available.
-   Replace `email` / `phone` / `linkedin` if you have different info.
-*/
+/* ============ Team data ============ */
 const TEAM = [
   {
     name: "Krishna Kumar Giri",
@@ -51,7 +48,6 @@ const TEAM = [
     phone: "",
     linkedin: "",
   },
- 
 ];
 
 /* ============ Keyframes ============ */
@@ -174,7 +170,6 @@ function TeamCard({ member, index }) {
             }}
           />
 
-          {/* Gold accent overlay bottom */}
           <div
             aria-hidden="true"
             style={{
@@ -190,7 +185,6 @@ function TeamCard({ member, index }) {
             }}
           />
 
-          {/* Socials (hover) */}
           {(member.email || member.phone || member.linkedin) && (
             <div
               style={{
@@ -663,7 +657,8 @@ export default function About() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 360px))",
+              justifyContent: "center",
               gap: "22px",
             }}
           >
@@ -737,7 +732,6 @@ export default function About() {
         </div>
       </section>
 
-      {/* Responsive split for the intro section (inline CSS can't do media queries) */}
       <style>{`
         @media (min-width: 900px) {
           .aa-about-grid {

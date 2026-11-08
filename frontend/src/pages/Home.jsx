@@ -95,7 +95,6 @@ function useInView(threshold = 0.15) {
   return [ref, seen];
 }
 
-/* ============ Reveal wrapper ============ */
 function Reveal({ children, delay = 0, as: Tag = "div", style, ...rest }) {
   const [ref, seen] = useInView();
   return (
@@ -177,7 +176,6 @@ export default function Home() {
           />
         ))}
 
-        {/* Dark gradient overlay for text readability */}
         <div
           aria-hidden="true"
           style={{
@@ -288,7 +286,6 @@ export default function Home() {
           </Reveal>
         </div>
 
-        {/* Dots */}
         <div
           style={{
             position: "absolute",
@@ -767,7 +764,8 @@ export default function Home() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 380px))",
+                justifyContent: "center",
                 gap: "22px",
               }}
             >
