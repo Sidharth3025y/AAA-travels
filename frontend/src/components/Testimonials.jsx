@@ -1,22 +1,23 @@
 import { useEffect, useState } from "react";
-import {
-  FaGoogle,
-  FaStar,
-  FaChevronLeft,
-  FaChevronRight,
-} from "react-icons/fa";
+import { FaGoogle, FaStar, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useI18n } from "../context/LanguageContext";
 import { fetchTestimonials } from "../api/services";
 
 const GOOGLE_REVIEW_URL =
   "https://www.google.com/search?q=aaa+travels+pokhara#lrd=0x399594e6a95ea585:0xe9c99ae3f13a2033,1";
-
 const RATE_US_URL =
   "https://www.google.com/search?q=aaa+travels+pokhara#lrd=0x399594e6a95ea585:0xe9c99ae3f13a2033,3";
 
+const CREAM = "#fdfaed";
+const BORDER = "#efe9cf";
+const YELLOW = "#bc9d2c";
+const YELLOW_DARK = "#7a5f14";
+const INK = "#1f1f1f";
+const BODY = "#3a3626";
+const MUTED = "#8a8676";
+
 export default function Testimonials() {
   const { t } = useI18n();
-
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -24,7 +25,6 @@ export default function Testimonials() {
 
   useEffect(() => {
     let mounted = true;
-
     const loadReviews = async () => {
       try {
         const data = await fetchTestimonials();
@@ -36,115 +36,86 @@ export default function Testimonials() {
         if (mounted) setLoading(false);
       }
     };
-
     loadReviews();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
     const updateCards = () => {
-      if (window.innerWidth <= 600) setVisibleCards(1);
-      else if (window.innerWidth <= 950) setVisibleCards(2);
+      if (window.innerWidth <= 640) setVisibleCards(1);
+      else if (window.innerWidth <= 1024) setVisibleCards(2);
       else setVisibleCards(3);
     };
-
     updateCards();
     window.addEventListener("resize", updateCards);
     return () => window.removeEventListener("resize", updateCards);
   }, []);
 
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [reviews.length, visibleCards]);
+  useEffect(() => { setActiveIndex(0); }, [reviews.length, visibleCards]);
 
   const maxIndex = Math.max(0, reviews.length - visibleCards);
 
   useEffect(() => {
     if (reviews.length <= visibleCards) return undefined;
-
     const interval = setInterval(() => {
-      setActiveIndex((current) => (current >= maxIndex ? 0 : current + 1));
-    }, 4500);
-
+      setActiveIndex((c) => (c >= maxIndex ? 0 : c + 1));
+    }, 6000);
     return () => clearInterval(interval);
   }, [reviews.length, visibleCards, maxIndex]);
 
-  const nextSlide = () => {
-    setActiveIndex((current) => (current >= maxIndex ? 0 : current + 1));
-  };
-
-  const previousSlide = () => {
-    setActiveIndex((current) => (current <= 0 ? maxIndex : current - 1));
-  };
+  const nextSlide = () => setActiveIndex((c) => (c >= maxIndex ? 0 : c + 1));
+  const previousSlide = () => setActiveIndex((c) => (c <= 0 ? maxIndex : c - 1));
 
   const cardWidth =
-    visibleCards === 1
-      ? "100%"
-      : visibleCards === 2
-        ? "calc(50% - 11px)"
-        : "calc(33.333% - 14.7px)";
+    visibleCards === 1 ? "100%" : visibleCards === 2 ? "calc(50% - 10px)" : "calc(33.333% - 13.4px)";
 
   return (
-    <section
-      style={{
-        padding: "85px 20px",
-        background: "linear-gradient(180deg, #f8fafc 0%, #ffffff 100%)",
-        overflow: "hidden",
-      }}
-    >
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: "45px" }}>
+    <section style={{ background: CREAM, padding: "72px 20px" }}>
+      <div style={{ maxWidth: "1120px", margin: "0 auto" }}>
+        <div style={{ marginBottom: "48px", maxWidth: "640px" }}>
           <div
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: "9px",
-              padding: "8px 17px",
-              borderRadius: "50px",
-              background: "#ffffff",
-              border: "1px solid #e5e7eb",
-              boxShadow: "0 5px 18px rgba(15, 23, 42, 0.07)",
-              color: "#475569",
-              fontSize: "14px",
-              fontWeight: "600",
-              marginBottom: "18px",
+              gap: "8px",
+              padding: "6px 14px",
+              borderRadius: "999px",
+              background: "#fff",
+              border: `1px solid ${BORDER}`,
+              color: YELLOW_DARK,
+              fontSize: "11px",
+              fontWeight: 700,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              marginBottom: "20px",
             }}
           >
-            <FaGoogle style={{ color: "#4285F4", fontSize: "18px" }} />
+            <FaGoogle style={{ color: "#4285F4", fontSize: "14px" }} aria-hidden="true" />
             Google Reviews
           </div>
 
           <h2
             style={{
-              margin: "0 0 12px",
-              fontSize: "clamp(30px, 4vw, 44px)",
-              fontWeight: "800",
-              color: "#14213d",
-              letterSpacing: "-0.8px",
+              margin: 0,
+              fontFamily: "Georgia, 'Times New Roman', serif",
+              fontSize: "clamp(28px, 3.4vw, 40px)",
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              lineHeight: 1.15,
+              color: INK,
             }}
           >
             {t("testimonials.title")}
           </h2>
-
-          <p
-            style={{
-              maxWidth: "680px",
-              margin: "0 auto",
-              color: "#64748b",
-              lineHeight: "1.75",
-              fontSize: "16px",
-            }}
-          >
+          <p style={{ marginTop: "12px", marginBottom: 0, fontSize: "16px", lineHeight: 1.7, color: BODY }}>
             {t("testimonials.subtitle")}
           </p>
         </div>
 
         {loading ? (
-          <p className="empty">{t("detail.loading")}</p>
+          <p style={{ padding: "60px 0", textAlign: "center", color: MUTED }}>{t("detail.loading")}</p>
         ) : reviews.length === 0 ? (
-          <p className="empty">{t("testimonials.empty")}</p>
+          <p style={{ padding: "60px 0", textAlign: "center", color: MUTED }}>{t("testimonials.empty")}</p>
         ) : (
           <div style={{ position: "relative" }}>
             {reviews.length > visibleCards && (
@@ -155,15 +126,18 @@ export default function Testimonials() {
                   aria-label="Previous reviews"
                   style={{
                     position: "absolute",
-                    left: -8,
-                    top: "42%",
+                    left: "-8px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
                     zIndex: 2,
-                    width: 40,
-                    height: 40,
-                    borderRadius: "50%",
-                    border: "1px solid #e5e7eb",
+                    width: 44,
+                    height: 44,
+                    borderRadius: "999px",
+                    border: `1px solid ${BORDER}`,
                     background: "#fff",
+                    color: YELLOW_DARK,
                     cursor: "pointer",
+                    boxShadow: "0 2px 8px rgba(122,95,20,0.08)",
                   }}
                 >
                   <FaChevronLeft />
@@ -174,15 +148,18 @@ export default function Testimonials() {
                   aria-label="Next reviews"
                   style={{
                     position: "absolute",
-                    right: -8,
-                    top: "42%",
+                    right: "-8px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
                     zIndex: 2,
-                    width: 40,
-                    height: 40,
-                    borderRadius: "50%",
-                    border: "1px solid #e5e7eb",
+                    width: 44,
+                    height: 44,
+                    borderRadius: "999px",
+                    border: `1px solid ${BORDER}`,
                     background: "#fff",
+                    color: YELLOW_DARK,
                     cursor: "pointer",
+                    boxShadow: "0 2px 8px rgba(122,95,20,0.08)",
                   }}
                 >
                   <FaChevronRight />
@@ -194,9 +171,9 @@ export default function Testimonials() {
               <div
                 style={{
                   display: "flex",
-                  gap: 22,
+                  gap: "20px",
                   transform: `translateX(-${activeIndex * (100 / visibleCards)}%)`,
-                  transition: "transform 0.45s ease",
+                  transition: "transform 500ms ease",
                 }}
               >
                 {reviews.map((review) => (
@@ -204,30 +181,40 @@ export default function Testimonials() {
                     key={review._id || review.name}
                     style={{
                       flex: `0 0 ${cardWidth}`,
+                      display: "flex",
+                      flexDirection: "column",
+                      minHeight: "240px",
                       background: "#fff",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: 18,
-                      padding: 24,
-                      boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
-                      minHeight: 220,
+                      border: `1px solid ${BORDER}`,
+                      borderRadius: "16px",
+                      padding: "24px",
+                      boxShadow: "0 1px 2px rgba(122,95,20,0.04), 0 12px 28px -16px rgba(122,95,20,0.18)",
                     }}
                   >
-                    <div style={{ display: "flex", gap: 4, color: "#fbbc04", marginBottom: 12 }}>
+                    <div
+                      style={{ display: "flex", gap: "4px", color: "#fbbc04", marginBottom: "16px" }}
+                      aria-label={`${review.rating || 5} out of 5 stars`}
+                    >
                       {Array.from({ length: 5 }).map((_, i) => (
                         <FaStar
                           key={i}
-                          style={{ opacity: i < (review.rating || 5) ? 1 : 0.25 }}
+                          aria-hidden="true"
+                          style={{ opacity: i < (review.rating || 5) ? 1 : 0.22 }}
                         />
                       ))}
                     </div>
-                    <p style={{ margin: "0 0 18px", color: "#334155", lineHeight: 1.7 }}>
+                    <p style={{ margin: "0 0 20px", flex: 1, fontSize: "15px", lineHeight: 1.7, color: BODY }}>
                       “{review.quote}”
                     </p>
-                    <strong style={{ display: "block", color: "#0f2744" }}>{review.name}</strong>
-                    <span style={{ color: "#64748b", fontSize: 13 }}>
-                      {review.location}
-                      {review.reviewDate ? ` · ${review.reviewDate}` : ""}
-                    </span>
+                    <div>
+                      <strong style={{ display: "block", fontSize: "15px", fontWeight: 700, color: INK }}>
+                        {review.name}
+                      </strong>
+                      <span style={{ fontSize: "12px", color: MUTED }}>
+                        {review.location}
+                        {review.reviewDate ? ` · ${review.reviewDate}` : ""}
+                      </span>
+                    </div>
                   </article>
                 ))}
               </div>
@@ -237,12 +224,11 @@ export default function Testimonials() {
 
         <div
           style={{
-            textAlign: "center",
-            marginTop: "45px",
+            marginTop: "48px",
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "center",
-            gap: 16,
+            gap: "12px",
           }}
         >
           <a
@@ -252,18 +238,18 @@ export default function Testimonials() {
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: "10px",
-              padding: "14px 25px",
-              borderRadius: "10px",
-              background: "#1c89ad",
-              color: "#ffffff",
+              gap: "8px",
+              minHeight: "48px",
+              padding: "12px 24px",
+              borderRadius: "999px",
+              background: INK,
+              color: "#fff",
               textDecoration: "none",
-              fontSize: "15px",
-              fontWeight: "700",
-              boxShadow: "0 8px 20px rgba(20, 33, 61, 0.18)",
+              fontSize: "14px",
+              fontWeight: 700,
             }}
           >
-            <FaGoogle />
+            <FaGoogle aria-hidden="true" />
             Read all reviews on Google
           </a>
           <a
@@ -273,18 +259,19 @@ export default function Testimonials() {
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: "10px",
-              padding: "14px 25px",
-              borderRadius: "10px",
-              background: "#257da6",
-              color: "#ffffff",
+              gap: "8px",
+              minHeight: "48px",
+              padding: "12px 24px",
+              borderRadius: "999px",
+              background: "#fff",
+              border: `1px solid ${BORDER}`,
+              color: YELLOW_DARK,
               textDecoration: "none",
-              fontSize: "15px",
-              fontWeight: "700",
-              boxShadow: "0 8px 20px rgba(20, 33, 61, 0.18)",
+              fontSize: "14px",
+              fontWeight: 700,
             }}
           >
-            <FaGoogle />
+            <FaGoogle aria-hidden="true" />
             {t("testimonials.rateUs")}
           </a>
         </div>

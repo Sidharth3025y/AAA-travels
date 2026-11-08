@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { useI18n } from "../../context/LanguageContext";
 import LanguageSwitcher from "./LanguageSwitcher";
 import Logo from "../../assets/Logo.png";
@@ -10,114 +11,282 @@ import {
   FaPhone,
 } from "react-icons/fa";
 
-const footerLinkClass =
-  "block py-1 text-sm text-[#c5d0de] transition hover:text-white";
 
-const footerHeadingClass =
-  "m-0 mb-4 font-serif text-base font-bold tracking-tight text-white";
 
-const socialBtnClass =
-  "grid h-12 w-12 place-items-center rounded-full text-[22px] text-white shadow-[0_4px_14px_rgba(0,0,0,0.28)] transition-transform hover:scale-110";
+/* ===== Tokens ===== */
+const C = {
+  bg: "#0b1b30",
+  ink: "#d5dde8",
+  inkSoft: "#c5d0de",
+  inkMuted: "#8fa0b6",
+  gold: "#c9a227",
+  line: "#22364f",
+};
+
+
+/* ===== Shared styles ===== */
+const footerHeadingStyle = {
+  margin: "0 0 16px",
+  fontFamily: "Georgia, 'Times New Roman', serif",
+  fontSize: "15px",
+  fontWeight: 700,
+  letterSpacing: "-0.01em",
+  color: "#ffffff",
+  position: "relative",
+  paddingBottom: "10px",
+};
+
+const underlineStyle = {
+  position: "absolute",
+  left: 0,
+  bottom: 0,
+  width: "28px",
+  height: "2px",
+  background: C.gold,
+  borderRadius: "2px",
+};
+
+const footerLinkBase = {
+  display: "block",
+  padding: "5px 0",
+  fontSize: "14px",
+  textDecoration: "none",
+  transition: "color 180ms ease, transform 180ms ease",
+};
+
+const socialBtnBase = {
+  display: "grid",
+  placeItems: "center",
+  height: "52px",
+  width: "52px",
+  borderRadius: "999px",
+  color: "#fff",
+  fontSize: "22px",
+  textDecoration: "none",
+  boxShadow: "0 6px 18px rgba(0,0,0,0.32)",
+  transition: "transform 200ms ease, box-shadow 200ms ease",
+};
 
 export default function Footer() {
   const { t } = useI18n();
   const year = new Date().getFullYear();
+  const [hovered, setHovered] = useState(null);
+  const [fbHover, setFbHover] = useState(false);
+  const [waHover, setWaHover] = useState(false);
+
+  const quickLinks = [
+    { to: "/", label: t("nav.home") },
+    { to: "/packages", label: t("nav.tours") },
+    { to: "/flights", label: t("nav.flights") },
+    { to: "/about", label: t("nav.about") },
+    { to: "/contact", label: t("nav.contact") },
+  ];
+
+  const legalLinks = [
+    { to: "/privacy-policy", label: t("enquire.privacyLink") },
+    { to: "/terms-conditions", label: t("enquire.termsLink") },
+  ];
+
+  const contacts = [
+    { Icon: FaLocationArrow, value: t("contact.addressValue") },
+    { Icon: FaPhone, value: t("contact.phoneValue") },
+    { Icon: FaEnvelope, value: t("contact.emailValue") },
+  ];
 
   return (
     <>
-      <footer className="bg-[#0b1b30] px-5 pt-16 pb-6 text-[#d5dde8]">
-        <div className="mx-auto max-w-[1180px]">
-          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
-            {/* ---------- Brand / about ---------- */}
+      <footer
+        style={{
+          background: C.bg,
+          padding: "64px 20px 24px",
+          color: C.ink,
+          fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        }}
+      >
+        <div style={{ maxWidth: "1180px", margin: "0 auto" }}>
+          {/* Top grid */}
+          <div
+            className="aa-footer-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.4fr 1fr 1fr 1.2fr",
+              gap: "40px",
+            }}
+          >
+            {/* Brand */}
             <div>
-              <div className="mb-4 flex items-center gap-3">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  marginBottom: "16px",
+                }}
+              >
                 <img
                   src={Logo}
                   alt="AAA Travels and Tours"
-                  className="h-12 w-12 rounded-full border-2 border-white/15 object-cover"
+                  style={{
+                    height: "48px",
+                    width: "48px",
+                    borderRadius: "999px",
+                    border: "2px solid rgba(255,255,255,0.15)",
+                    objectFit: "cover",
+                  }}
                 />
-                <h2 className="m-0 font-serif text-lg font-bold tracking-tight text-white">
+                <h2
+                  style={{
+                    margin: 0,
+                    fontFamily: "Georgia, 'Times New Roman', serif",
+                    fontSize: "18px",
+                    fontWeight: 700,
+                    letterSpacing: "-0.01em",
+                    color: "#fff",
+                  }}
+                >
                   {t("brand")}
                 </h2>
               </div>
 
-              <p className="m-0 max-w-[320px] text-sm leading-relaxed text-[#c5d0de]">
+              <p
+                style={{
+                  margin: 0,
+                  maxWidth: "320px",
+                  fontSize: "14px",
+                  lineHeight: 1.7,
+                  color: C.inkSoft,
+                }}
+              >
                 {t("footer.about")}
               </p>
 
-              <div className="mt-5">
+              <div style={{ marginTop: "20px" }}>
                 <LanguageSwitcher />
               </div>
             </div>
 
-            {/* ---------- Useful links ---------- */}
+            {/* Quick links */}
             <div>
-              <h4 className={footerHeadingClass}>{t("footer.quick")}</h4>
-              <Link to="/" className={footerLinkClass}>
-                {t("nav.home")}
-              </Link>
-              <Link to="/packages" className={footerLinkClass}>
-                {t("nav.tours")}
-              </Link>
-              <Link to="/flights" className={footerLinkClass}>
-                {t("nav.flights")}
-              </Link>
-              <Link to="/about" className={footerLinkClass}>
-                {t("nav.about")}
-              </Link>
-              <Link to="/contact" className={footerLinkClass}>
-                {t("nav.contact")}
-              </Link>
+              <h4 style={footerHeadingStyle}>
+                {t("footer.quick")}
+                <span aria-hidden="true" style={underlineStyle} />
+              </h4>
+              {quickLinks.map((l) => (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  style={{
+                    ...footerLinkBase,
+                    color: hovered === l.to ? "#fff" : C.inkSoft,
+                    transform: hovered === l.to ? "translateX(4px)" : "translateX(0)",
+                  }}
+                  onMouseEnter={() => setHovered(l.to)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  {l.label}
+                </Link>
+              ))}
             </div>
 
+            {/* Legal */}
             <div>
-              <h4 className={footerHeadingClass}>{t("footer.legal")}</h4>
-              <Link to="/privacy-policy" className={footerLinkClass}>
-                {t("enquire.privacyLink")}
-              </Link>
-              <Link to="/terms-conditions" className={footerLinkClass}>
-                {t("enquire.termsLink")}
-              </Link>
+              <h4 style={footerHeadingStyle}>
+                {t("footer.legal")}
+                <span aria-hidden="true" style={underlineStyle} />
+              </h4>
+              {legalLinks.map((l) => (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  style={{
+                    ...footerLinkBase,
+                    color: hovered === l.to ? "#fff" : C.inkSoft,
+                    transform: hovered === l.to ? "translateX(4px)" : "translateX(0)",
+                  }}
+                  onMouseEnter={() => setHovered(l.to)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  {l.label}
+                </Link>
+              ))}
             </div>
 
-            {/* ---------- Contact ---------- */}
-            <div className="sm:col-span-2 lg:col-span-1">
-              <h4 className={footerHeadingClass}>{t("contact.title")}</h4>
-
-              <p className="m-0 flex items-start gap-2.5 py-1 text-sm text-[#c5d0de]">
-                <FaLocationArrow className="mt-1 flex-shrink-0 text-[#c9a227]" />
-                <span>{t("contact.addressValue")}</span>
-              </p>
-
-              <p className="m-0 flex items-start gap-2.5 py-1 text-sm text-[#c5d0de]">
-                <FaPhone className="mt-1 flex-shrink-0 text-[#c9a227]" />
-                <span>{t("contact.phoneValue")}</span>
-              </p>
-
-              <p className="m-0 flex items-start gap-2.5 py-1 text-sm text-[#c5d0de]">
-                <FaEnvelope className="mt-1 flex-shrink-0 text-[#c9a227]" />
-                <span>{t("contact.emailValue")}</span>
-              </p>
+            {/* Contact */}
+            <div>
+              <h4 style={footerHeadingStyle}>
+                {t("contact.title")}
+                <span aria-hidden="true" style={underlineStyle} />
+              </h4>
+              {contacts.map(({ Icon, value }, i) => (
+                <p
+                  key={i}
+                  style={{
+                    margin: 0,
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "10px",
+                    padding: "5px 0",
+                    fontSize: "14px",
+                    lineHeight: 1.55,
+                    color: C.inkSoft,
+                  }}
+                >
+                  <Icon
+                    aria-hidden="true"
+                    style={{ marginTop: "4px", flexShrink: 0, color: C.gold }}
+                  />
+                  <span>{value}</span>
+                </p>
+              ))}
             </div>
           </div>
 
-          {/* ---------- Bottom bar ---------- */}
-          <div className="mt-10 border-t border-[#22364f] pt-5 text-center text-xs text-[#8fa0b6]">
+          {/* Bottom bar */}
+          <div
+            style={{
+              marginTop: "48px",
+              paddingTop: "20px",
+              borderTop: `1px solid ${C.line}`,
+              textAlign: "center",
+              fontSize: "12px",
+              color: C.inkMuted,
+              letterSpacing: "0.02em",
+            }}
+          >
             © {year} {t("brand")}. {t("footer.rights")}
           </div>
         </div>
       </footer>
 
-      {/* ---------- Floating socials ---------- */}
-      <div className="fixed bottom-6 right-5 z-[9999] flex flex-col gap-3">
+      {/* Floating socials */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: "24px",
+          right: "20px",
+          zIndex: 9999,
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+        }}
+      >
         <a
           href="https://www.facebook.com/aaatravels"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Facebook"
-          className={`${socialBtnClass} bg-[#1877F2]`}
+          onMouseEnter={() => setFbHover(true)}
+          onMouseLeave={() => setFbHover(false)}
+          style={{
+            ...socialBtnBase,
+            background: "#1877F2",
+            transform: fbHover ? "scale(1.1) translateY(-2px)" : "scale(1)",
+            boxShadow: fbHover
+              ? "0 12px 26px rgba(24,119,242,0.5)"
+              : "0 6px 18px rgba(0,0,0,0.32)",
+          }}
         >
-          <FaFacebookF />
+          <FaFacebookF aria-hidden="true" />
         </a>
 
         <a
@@ -125,11 +294,36 @@ export default function Footer() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="WhatsApp"
-          className={`${socialBtnClass} bg-[#25D366]`}
+          onMouseEnter={() => setWaHover(true)}
+          onMouseLeave={() => setWaHover(false)}
+          style={{
+            ...socialBtnBase,
+            background: "#25D366",
+            transform: waHover ? "scale(1.1) translateY(-2px)" : "scale(1)",
+            boxShadow: waHover
+              ? "0 12px 26px rgba(37,211,102,0.5)"
+              : "0 6px 18px rgba(0,0,0,0.32)",
+          }}
         >
-          <FaWhatsapp />
+          <FaWhatsapp aria-hidden="true" />
         </a>
       </div>
+
+      {/* Responsive grid — one external rule for footer columns */}
+      <style>{`
+        @media (max-width: 1024px) {
+          .aa-footer-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 32px !important;
+          }
+        }
+        @media (max-width: 640px) {
+          .aa-footer-grid {
+            grid-template-columns: 1fr !important;
+            gap: 28px !important;
+          }
+        }
+      `}</style>
     </>
   );
 }

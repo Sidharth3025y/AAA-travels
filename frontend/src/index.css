@@ -747,3 +747,19 @@ cite {
     position: static;
   }
 }
+@media (max-width: 1279px) {
+  .aa-desktop-nav {
+    display: none !important;
+  }
+  .aa-desktop-cta {
+    display: none !important;
+  }
+}
+@media (min-width: 1280px) {
+  .aa-hamburger {
+    display: none !important;
+  }
+  #mobile-navigation {
+    display: none !important;
+  }
+}
