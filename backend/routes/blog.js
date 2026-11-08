@@ -44,6 +44,7 @@ function mongooseId(id) {
   return /^[a-fA-F0-9]{24}$/.test(id);
 }
 
+// POST: Create new blog with image upload to Cloudinary
 router.post(
   "/",
   authMiddleware,
@@ -51,13 +52,20 @@ router.post(
   uploadPackageImage,
   async (req, res) => {
     try {
-      if (!req.file)
+      if (!req.file || !req.file.path) {
         return res.status(400).json({ msg: "Blog image is required (JPG/PNG)" });
+      }
 
+      // req.file.path is the Cloudinary URL
       const { title, excerpt, content, author, status } = req.body;
 
       if (!String(title || "").trim() || !String(content || "").trim()) {
-        removeUploadedFile(req.file.path);
+        // Cloudinary image already saved, but we need to delete it on failure
+        // req.file.path is the Cloudinary URL - we need public_id to delete
+        // Extract public_id from URL: https://res.cloudinary.com/xxx/aaa-travels/unique-suffix
+        const urlParts = req.file.path.split("/");
+        const publicId = urlParts.slice(3).join("/");
+        removeUploadedFile(publicId);
         return res.status(400).json({ msg: "Missing required fields" });
       }
 
@@ -67,7 +75,7 @@ router.post(
         slug,
         excerpt: String(excerpt || "").trim(),
         content: String(content).trim(),
-        image: `/uploads/${req.file.filename}`,
+        image: req.file.path, // Cloudinary URL
         author: author || "AAA Travels",
         status: status === "draft" ? "draft" : "published",
       };
@@ -75,13 +83,19 @@ router.post(
       const created = await Blog.create(data);
       res.status(201).json(created);
     } catch (err) {
-      removeUploadedFile(req.file?.path);
+      // If save fails and we have a Cloudinary upload, try to clean up
+      if (req.file && req.file.path) {
+        const urlParts = req.file.path.split("/");
+        const publicId = urlParts.slice(3).join("/");
+        removeUploadedFile(publicId);
+      }
       console.error(err);
       res.status(500).json({ msg: "Failed to create blog post" });
     }
   }
 );
 
+// PUT: Update blog - Cloudinary handles old image
 router.put(
   "/:id",
   authMiddleware,
@@ -95,7 +109,10 @@ router.put(
       const { title, excerpt, content, author, status } = req.body;
 
       if (!String(title || "").trim() || !String(content || "").trim()) {
-        removeUploadedFile(req.file?.path);
+        // Extract public_id from existing Cloudinary URL to delete it
+        const urlParts = blog.image.split("/");
+        const publicId = urlParts.slice(3).join("/");
+        removeUploadedFile(publicId);
         return res.status(400).json({ msg: "Missing required fields" });
       }
 
@@ -109,26 +126,47 @@ router.put(
       blog.author = author || blog.author;
       blog.status = status === "draft" ? "draft" : "published";
 
+      // Cloudinary: save new image URL first, then delete old one
       const previousImage = blog.image;
-      if (req.file) {
-        blog.image = `/uploads/${req.file.filename}`;
+      if (req.file && req.file.path) {
+        blog.image = req.file.path;
       }
 
       await blog.save();
-      if (req.file) removeUploadedFile(previousImage);
+
+      // Delete old Cloudinary image after successful save
+      if (req.file && req.file.path && previousImage) {
+        const urlParts = previousImage.split("/");
+        const publicId = urlParts.slice(3).join("/");
+        removeUploadedFile(publicId);
+      }
       res.json(blog);
     } catch (err) {
-      removeUploadedFile(req.file?.path);
+      // If save fails and we have a new Cloudinary upload, try to clean up
+      if (req.file && req.file.path) {
+        const urlParts = req.file.path.split("/");
+        const publicId = urlParts.slice(3).join("/");
+        removeUploadedFile(publicId);
+      }
       console.error(err);
       res.status(500).json({ msg: "Failed to update blog post" });
     }
   }
 );
 
+// DELETE: Blog post
 router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const deleted = await Blog.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ msg: "Blog post not found" });
+
+    // Delete image from Cloudinary if it's a Cloudinary URL
+    if (deleted.image) {
+      const urlParts = deleted.image.split("/");
+      const publicId = urlParts.slice(3).join("/");
+      removeUploadedFile(publicId);
+    }
+
     res.json({ msg: "Blog post deleted" });
   } catch (err) {
     console.error(err);

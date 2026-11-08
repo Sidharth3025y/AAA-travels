@@ -59,6 +59,7 @@ function mongooseId(id) {
   return /^[a-fA-F0-9]{24}$/.test(id);
 }
 
+// POST: Create new package with image upload to Cloudinary
 router.post(
   "/",
   authMiddleware,
@@ -66,7 +67,11 @@ router.post(
   uploadPackageImage,
   async (req, res) => {
     try {
-      if (!req.file) return res.status(400).json({ msg: "Package image is required (JPG/PNG)" });
+      if (!req.file || !req.file.path) {
+        return res.status(400).json({ msg: "Package image is required (JPG/PNG)" });
+      }
+
+      // req.file.path is the Cloudinary URL
       const data = bodyFrom(req);
       if (!data.name || !data.overview || !data.destination || !data.category) {
         return res.status(400).json({ msg: "Missing required fields" });
@@ -75,7 +80,8 @@ router.post(
         return res.status(400).json({ msg: "Duration and prices must be valid numbers" });
       }
       data.slug = await uniqueSlug(Package, data.name);
-      data.image = `/uploads/${req.file.filename}`;
+      // Cloudinary URL is already stored in req.file.path
+      data.image = req.file.path;
       const created = await Package.create(data);
       res.status(201).json(created);
     } catch (err) {
@@ -85,6 +91,7 @@ router.post(
   }
 );
 
+// PUT: Update package - Cloudinary handles old image cleanup
 router.put(
   "/:id",
   authMiddleware,
@@ -105,18 +112,23 @@ router.put(
         data.slug = await uniqueSlug(Package, data.name, pkg._id);
       }
 
-      // Save new image reference to DB first, then delete old file
-      // This ensures we don't lose the image reference if save fails
+      // Cloudinary: save new image URL first, then delete old one
       const previousImage = pkg.image;
-      if (req.file) {
-        data.image = `/uploads/${req.file.filename}`;
+      if (req.file && req.file.path) {
+        data.image = req.file.path;
       }
       Object.assign(pkg, data);
       await pkg.save();
 
-      // Now delete the old file after successful save
-      if (req.file && previousImage) {
-        removeUploadedFile(previousImage);
+      // Delete old Cloudinary image after successful save
+      // previousImage is a Cloudinary URL like: https://res.cloudinary.com/xxx/aaa-travels/...
+      // We extract the public_id from the URL
+      if (req.file && req.file.path && previousImage) {
+        // Extract public_id from Cloudinary URL
+        // URL format: https://res.cloudinary.com/demo/aaa-travels/unique-suffix
+        const urlParts = previousImage.split("/");
+        const publicId = urlParts.slice(3).join("/"); // everything after cloud_name/folder
+        removeUploadedFile(publicId);
       }
       res.json(pkg);
     } catch (err) {
@@ -126,11 +138,22 @@ router.put(
   }
 );
 
+// DELETE: Package with Cloudinary cleanup
 router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const deleted = await Package.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ msg: "Package not found" });
-    removeUploadedFile(deleted.image);
+
+    // Delete image from Cloudinary if it exists and is a Cloudinary URL
+    if (deleted.image && !deleted.image.startsWith("http") === false) {
+      // It's a local path, skip Cloudinary delete
+    } else if (deleted.image) {
+      // It's a Cloudinary URL - extract public_id
+      const urlParts = deleted.image.split("/");
+      const publicId = urlParts.slice(3).join("/");
+      removeUploadedFile(publicId);
+    }
+
     res.json({ msg: "Package deleted" });
   } catch (err) {
     console.error(err);

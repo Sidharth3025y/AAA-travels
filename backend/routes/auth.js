@@ -34,7 +34,7 @@ function signToken(user) {
   return jwt.sign(
     { id: user._id, email: user.email, role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" },
+    { expiresIn: "2h" }, // 2 hours admin session timeout
   );
 }
 

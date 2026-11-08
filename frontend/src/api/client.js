@@ -20,6 +20,7 @@ export function apiUrl(path) {
   return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+// Handles token expiry: if JWT expires (2 hours), auto-logout
 export async function apiFetch(path, options = {}) {
   const res = await fetch(apiUrl(path), {
     credentials: "include",
@@ -32,6 +33,12 @@ export async function apiFetch(path, options = {}) {
       ...options.headers,
     },
   });
+
+  // If token expired (401), clear it and throw for handler to redirect
+  if (res.status === 401) {
+    clearAuthToken();
+    throw new Error("Session expired. Please log in again.");
+  }
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {

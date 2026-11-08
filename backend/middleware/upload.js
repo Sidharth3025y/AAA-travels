@@ -1,28 +1,12 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
+import { cloudinaryStorage } from "../config/cloudinary.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadDir = path.join(__dirname, "..", "uploads");
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
-  },
-});
-
+// Multer setup using Cloudinary storage (cloud-based, persists across restarts)
 export const uploadImage = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  storage: cloudinaryStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
+    const ext = require("path").extname(file.originalname).toLowerCase();
     const okMime = ["image/jpeg", "image/png", "image/jpg"].includes(file.mimetype);
     const okExt = [".jpg", ".jpeg", ".png"].includes(ext);
     if (okMime && okExt) cb(null, true);
@@ -30,20 +14,33 @@ export const uploadImage = multer({
   },
 });
 
-export function uploadPackageImage(req, res, next) {
+// Upload middleware for packages - handles single image file
+export const uploadPackageImage = (req, res, next) => {
   uploadImage.single("image")(req, res, (err) => {
     if (err) {
       return res.status(400).json({ msg: err.message || "Upload failed" });
     }
     next();
   });
-}
+};
 
-export function removeUploadedFile(imagePath) {
-  if (!imagePath || String(imagePath).startsWith("http")) return;
-  const file = path.basename(imagePath);
-  if (!file || file === "." || file === "..") return;
-  const full = path.join(uploadDir, file);
-  fs.promises.unlink(full).catch(() => {});
-}
+// Upload middleware for blogs - handles single image file
+export const uploadBlogImage = (req, res, next) => {
+  uploadImage.single("image")(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ msg: err.message || "Upload failed" });
+    }
+    next();
+  });
+};
 
+// Remove uploaded file from Cloudinary by public_id
+export function removeUploadedFile(publicId) {
+  if (!publicId) return;
+  // Cloudinary public_id is the folder path + filename without extension
+  // e.g., "aaa-travels/unique-suffix"
+  cloudinaryV2.uploader.destroy(publicId, (error, result) => {
+    if (error) console.error("Cloudinary delete error:", error);
+    else console.log("Cloudinary deleted:", result);
+  });
+}

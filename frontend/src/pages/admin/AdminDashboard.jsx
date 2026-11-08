@@ -154,10 +154,15 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (user?.role !== "admin") return undefined;
-    loadAll().catch((err) =>
-      setError(err.message || "Failed to load admin data")
-    );
-  }, [user]);
+    
+    // Load admin data, handling token expiry
+    loadAll().catch((err) => {
+      if (err.message === "Session expired. Please log in again.") {
+        logout();
+      }
+      setError(err.message || "Failed to load admin data");
+    });
+  }, [user, logout]);
 
   if (loading)
     return (
