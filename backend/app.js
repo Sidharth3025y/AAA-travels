@@ -17,7 +17,9 @@ dotenv.config();
 const required = ["MONGO_URI", "JWT_SECRET"];
 const missing = required.filter((key) => !process.env[key]);
 if (missing.length) {
-  console.error(`Missing required environment variables: ${missing.join(", ")}`);
+  console.error(
+    `Missing required environment variables: ${missing.join(", ")}`,
+  );
   process.exit(1);
 }
 
@@ -81,3 +83,7 @@ try {
   console.error("MongoDB connection failed:", err);
   process.exit(1);
 }
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ ok: true });
+});
