@@ -22,10 +22,34 @@ export default function App() {
   const location = useLocation();
 
   useEffect(() => {
-    const pingBackend = () => {
-      fetch(`${import.meta.env.VITE_API_URL}/api/health`).catch(() => {
-        // Ignore errors; this is a background availability ping.
-      });
+    const pingBackend = async () => {
+      try {
+        // Use the simpler /health endpoint (no MongoDB check) for faster wakeups
+        // Fall back to /api/health if needed; ensure VITE_API_URL is set in your env
+        const url = import.meta.env.VITE_API_URL
+          ? `${import.meta.env.VITE_API_URL}/health`
+          : "/api/health";
+
+        const controller = new AbortController();
+        // 10-second timeout so a hung request doesn't block future pings
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const response = await fetch(url, {
+          method: "GET",
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        // Log non-200 responses for debugging but don't treat as failure
+        if (!response.ok) {
+          console.warn(`Health check returned status: ${response.status}`);
+        }
+      } catch (error) {
+        // Log the error so you can debug if pings are failing
+        // This prevents the silent ".catch(() => {})" anti-pattern
+        console.debug("Health check ping failed:", error);
+      }
     };
 
     pingBackend();
