@@ -74,9 +74,11 @@ router.post(
       // req.file.path is the Cloudinary URL
       const data = bodyFrom(req);
       if (!data.name || !data.overview || !data.destination || !data.category) {
+        removeUploadedFile(req.file.filename);
         return res.status(400).json({ msg: "Missing required fields" });
       }
       if (!data.duration || Number.isNaN(data.priceNpr) || Number.isNaN(data.priceUsd)) {
+        removeUploadedFile(req.file.filename);
         return res.status(400).json({ msg: "Duration and prices must be valid numbers" });
       }
       data.slug = await uniqueSlug(Package, data.name);
@@ -85,6 +87,7 @@ router.post(
       const created = await Package.create(data);
       res.status(201).json(created);
     } catch (err) {
+      if (req.file?.filename) removeUploadedFile(req.file.filename);
       console.error(err);
       res.status(500).json({ msg: "Failed to create package" });
     }
@@ -100,12 +103,17 @@ router.put(
   async (req, res) => {
     try {
       const pkg = await Package.findById(req.params.id);
-      if (!pkg) return res.status(404).json({ msg: "Package not found" });
+      if (!pkg) {
+        if (req.file?.filename) removeUploadedFile(req.file.filename);
+        return res.status(404).json({ msg: "Package not found" });
+      }
       const data = bodyFrom(req);
       if (!data.name || !data.overview || !data.destination || !data.category) {
+        if (req.file?.filename) removeUploadedFile(req.file.filename);
         return res.status(400).json({ msg: "Missing required fields" });
       }
       if (!data.duration || Number.isNaN(data.priceNpr) || Number.isNaN(data.priceUsd)) {
+        if (req.file?.filename) removeUploadedFile(req.file.filename);
         return res.status(400).json({ msg: "Duration and prices must be valid numbers" });
       }
       if (data.name && data.name !== pkg.name) {
@@ -121,17 +129,12 @@ router.put(
       await pkg.save();
 
       // Delete old Cloudinary image after successful save
-      // previousImage is a Cloudinary URL like: https://res.cloudinary.com/xxx/aaa-travels/...
-      // We extract the public_id from the URL
       if (req.file && req.file.path && previousImage) {
-        // Extract public_id from Cloudinary URL
-        // URL format: https://res.cloudinary.com/demo/aaa-travels/unique-suffix
-        const urlParts = previousImage.split("/");
-        const publicId = urlParts.slice(3).join("/"); // everything after cloud_name/folder
-        removeUploadedFile(publicId);
+        removeUploadedFile(previousImage);
       }
       res.json(pkg);
     } catch (err) {
+      if (req.file?.filename) removeUploadedFile(req.file.filename);
       console.error(err);
       res.status(500).json({ msg: "Failed to update package" });
     }
@@ -144,15 +147,7 @@ router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
     const deleted = await Package.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ msg: "Package not found" });
 
-    // Delete image from Cloudinary if it exists and is a Cloudinary URL
-    if (deleted.image && !deleted.image.startsWith("http") === false) {
-      // It's a local path, skip Cloudinary delete
-    } else if (deleted.image) {
-      // It's a Cloudinary URL - extract public_id
-      const urlParts = deleted.image.split("/");
-      const publicId = urlParts.slice(3).join("/");
-      removeUploadedFile(publicId);
-    }
+    removeUploadedFile(deleted.image);
 
     res.json({ msg: "Package deleted" });
   } catch (err) {

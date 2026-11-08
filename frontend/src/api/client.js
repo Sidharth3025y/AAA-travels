@@ -1,4 +1,9 @@
-const API_BASE = "https://aaa-travels-m9tq.onrender.com";
+const API_BASE = (
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV
+    ? "http://localhost:5000"
+    : "https://aaa-travels-m9tq.onrender.com")
+).replace(/\/+$/, "");
 const AUTH_TOKEN_KEY = "aaa-travels-admin-token";
 
 export function saveAuthToken(token) {

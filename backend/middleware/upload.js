@@ -1,5 +1,6 @@
 import multer from "multer";
 import path from "path";
+import { v2 as cloudinaryV2 } from "cloudinary";
 import { cloudinaryStorage } from "../config/cloudinary.js";
 
 // Multer setup using Cloudinary storage (cloud-based, persists across restarts)
@@ -35,13 +36,51 @@ export const uploadBlogImage = (req, res, next) => {
   });
 };
 
-// Remove uploaded file from Cloudinary by public_id
-export function removeUploadedFile(publicId) {
+export function cloudinaryPublicId(image) {
+  if (typeof image !== "string" || !image) return null;
+  if (image.startsWith("aaa-travels/")) return image;
+
+  let url;
+  try {
+    url = new URL(image);
+  } catch {
+    return null;
+  }
+
+  if (!url.hostname.endsWith(".cloudinary.com")) return null;
+
+  const segments = url.pathname.split("/").filter(Boolean);
+  const uploadIndex = segments.indexOf("upload");
+  if (uploadIndex === -1) return null;
+
+  let publicIdSegments = segments.slice(uploadIndex + 1);
+  const versionIndex = publicIdSegments.findIndex((part) => /^v\d+$/.test(part));
+  if (versionIndex !== -1) {
+    publicIdSegments = publicIdSegments.slice(versionIndex + 1);
+  }
+
+  const lastSegment = publicIdSegments.at(-1);
+  if (lastSegment) {
+    publicIdSegments[publicIdSegments.length - 1] = lastSegment.replace(
+      /\.(?:jpe?g|png)$/i,
+      "",
+    );
+  }
+
+  const publicId = publicIdSegments.join("/");
+  return publicId.startsWith("aaa-travels/") ? publicId : null;
+}
+
+export function removeUploadedFile(image) {
+  const publicId = cloudinaryPublicId(image);
   if (!publicId) return;
-  // Cloudinary public_id is the folder path + filename without extension
-  // e.g., "aaa-travels/unique-suffix"
-  cloudinaryV2.uploader.destroy(publicId, (error, result) => {
-    if (error) console.error("Cloudinary delete error:", error);
-    else console.log("Cloudinary deleted:", result);
-  });
+
+  cloudinaryV2.uploader
+    .destroy(publicId, { invalidate: true })
+    .then((result) => {
+      if (result.result !== "ok") {
+        console.error(`Cloudinary did not delete ${publicId}:`, result.result);
+      }
+    })
+    .catch((error) => console.error("Cloudinary delete error:", error));
 }

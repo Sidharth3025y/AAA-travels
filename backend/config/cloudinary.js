@@ -1,7 +1,7 @@
+import "dotenv/config";
 import cloudinary from "cloudinary";
 import { v2 as cloudinaryV2 } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
-import path from "path";
 
 cloudinaryV2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -11,15 +11,14 @@ cloudinaryV2.config({
 
 // Cloudinary storage for multer - files go directly to Cloudinary
 export const cloudinaryStorage = new CloudinaryStorage({
-  cloudinary: cloudinaryV2,
+  cloudinary,
   params: {
     folder: "aaa-travels",
     allowed_formats: ["jpg", "jpeg", "png"],
     transformation: [{ width: 800, height: 800, crop: "limit" }],
-    // Generate a public_id based on timestamp and original name
-    public_id: (req, file) => {
+    public_id: () => {
       const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-      return `${uniqueSuffix}-${path.basename(file.originalname, path.extname(file.originalname))}`;
+      return uniqueSuffix;
     },
   },
 });
