@@ -9,15 +9,22 @@ export default function PackageDetail() {
   const { t, localized } = useI18n();
   const [pkg, setPkg] = useState(null);
   const [loadedId, setLoadedId] = useState(null);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     fetchPackage(id)
       .then((data) => {
-        if (!cancelled) setPkg(data);
+        if (!cancelled) {
+          setPkg(data);
+          setLoadError("");
+        }
       })
-      .catch(() => {
-        if (!cancelled) setPkg(null);
+      .catch((error) => {
+        if (!cancelled) {
+          setPkg(null);
+          setLoadError(error.message || "Failed to load package details.");
+        }
       })
       .finally(() => {
         if (!cancelled) setLoadedId(id);
@@ -40,7 +47,9 @@ export default function PackageDetail() {
   if (!pkg) {
     return (
       <div className="page">
-        <p className="empty">{t("tours.noResults")}</p>
+        <p className="empty" role={loadError ? "alert" : undefined}>
+          {loadError || t("tours.noResults")}
+        </p>
         <Link to="/packages">{t("detail.back")}</Link>
       </div>
     );
