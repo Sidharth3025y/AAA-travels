@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 // --- Tokens (cool, editorial / data-led, intentionally different palette) ---
 const P = {
@@ -196,6 +196,20 @@ function Section({ number, title, children }) {
 }
 
 export default function PrivacyPolicy() {
+    const [isMobile, setIsMobile] = useState(false);
+    const [tocOpen, setTocOpen] = useState(false);
+
+    useEffect(() => {
+        const mq = window.matchMedia("(max-width: 760px)");
+        const handle = (e) => {
+            setIsMobile(e.matches);
+            if (!e.matches) setTocOpen(false);
+        };
+        setIsMobile(mq.matches);
+        mq.addEventListener("change", handle);
+        return () => mq.removeEventListener("change", handle);
+    }, []);
+
     const toc = [
         ["01", "Introduction"],
         ["02", "Information We Collect"],
@@ -212,27 +226,110 @@ export default function PrivacyPolicy() {
 
     return (
         <div style={pageStyle}>
+            {/*
+              Scoped responsive overrides.
+              Inline styles win over CSS, so we use !important only where we
+              must override the inline grid/padding values on mobile.
+            */}
+            <style>{`
+                @media (max-width: 760px) {
+                    .aa-privacy-grid {
+                        grid-template-columns: 1fr !important;
+                        padding: 24px 16px 64px !important;
+                        gap: 18px !important;
+                    }
+                    .aa-privacy-grid > aside {
+                        position: static !important;
+                        top: auto !important;
+                    }
+                    .aa-privacy-grid section {
+                        padding: 18px 16px !important;
+                    }
+                    .aa-privacy-grid .aa-contact {
+                        padding: 18px 16px !important;
+                    }
+                    .aa-privacy-grid header {
+                        padding-left: 14px !important;
+                        margin-bottom: 20px !important;
+                    }
+                }
+                .aa-toc-toggle {
+                    display: none;
+                }
+                @media (max-width: 760px) {
+                    .aa-toc-toggle {
+                        display: flex;
+                        width: 100%;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 10px;
+                        background: ${P.card};
+                        border: 1px solid ${P.rule};
+                        border-radius: 12px;
+                        padding: 14px 16px;
+                        font: inherit;
+                        font-weight: 700;
+                        font-size: 14px;
+                        color: ${P.ink};
+                        cursor: pointer;
+                        text-align: left;
+                    }
+                    .aa-toc-toggle .aa-chevron {
+                        transition: transform 0.2s ease;
+                        color: ${P.blue};
+                        font-size: 12px;
+                    }
+                    .aa-toc-toggle[aria-expanded="true"] .aa-chevron {
+                        transform: rotate(180deg);
+                    }
+                    .aa-rail-card {
+                        border-top-left-radius: 0;
+                        border-top-right-radius: 0;
+                        border-top: none;
+                        margin-top: -1px;
+                    }
+                }
+            `}</style>
+
             <div
                 style={wrapStyle}
                 className="aa-privacy-grid"
             >
                 {/* Sidebar rail */}
                 <aside style={railStyle}>
-                    <div style={railCardStyle}>
-                        <p style={railKickerStyle}>Privacy</p>
-                        <h2 style={railTitleStyle}>On this page</h2>
-                        <p style={railTextStyle}>
-                            How AAA Travels collects, uses, and protects your information.
-                        </p>
-                        <ol style={railListStyle}>
-                            {toc.map(([num, label]) => (
-                                <li key={num} style={railItemStyle}>
-                                    <span style={railNumStyle}>{num}</span>
-                                    <span>{label}</span>
-                                </li>
-                            ))}
-                        </ol>
-                    </div>
+                    {isMobile && (
+                        <button
+                            type="button"
+                            className="aa-toc-toggle"
+                            aria-expanded={tocOpen}
+                            aria-controls="aa-toc-panel"
+                            onClick={() => setTocOpen((o) => !o)}
+                        >
+                            <span>On this page</span>
+                            <span className="aa-chevron" aria-hidden="true">▼</span>
+                        </button>
+                    )}
+                    {(!isMobile || tocOpen) && (
+                        <div
+                            id="aa-toc-panel"
+                            className="aa-rail-card"
+                            style={railCardStyle}
+                        >
+                            <p style={railKickerStyle}>Privacy</p>
+                            <h2 style={railTitleStyle}>On this page</h2>
+                            <p style={railTextStyle}>
+                                How AAA Travels collects, uses, and protects your information.
+                            </p>
+                            <ol style={railListStyle}>
+                                {toc.map(([num, label]) => (
+                                    <li key={num} style={railItemStyle}>
+                                        <span style={railNumStyle}>{num}</span>
+                                        <span>{label}</span>
+                                    </li>
+                                ))}
+                            </ol>
+                        </div>
+                    )}
                 </aside>
 
                 <main style={mainStyle}>
@@ -352,7 +449,7 @@ export default function PrivacyPolicy() {
                         </p>
                     </Section>
 
-                    <div style={contactStyle}>
+                    <div style={contactStyle} className="aa-contact">
                         <div style={sectionHeadStyle}>
                             <span style={sectionNumStyle} aria-hidden="true">11</span>
                             <h2 style={h2Style}>Contact Us</h2>
